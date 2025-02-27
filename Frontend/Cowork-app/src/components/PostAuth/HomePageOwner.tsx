@@ -96,7 +96,6 @@ export default function HomePage() {
                     <Typography variant="h3" color={'primary'} sx={{fontSize: "clamp(1.65rem, 2.5vw, 3rem)", fontWeight: "500", width: {xs: "100vw", md: "50vw"}, padding: "0 0.5vh"}} gutterBottom>
                         Find your workspace.
                     </Typography>
-                    
                     <FormControl fullWidth sx={{ borderRadius: 8, textAlign: "center"}}>
                         <InputLabel htmlFor="outlined-adornment">Search</InputLabel>
                         <OutlinedInput
@@ -114,6 +113,9 @@ export default function HomePage() {
                         }
                         />
                     </FormControl>
+                    <Button variant="contained" fullWidth sx={{height: "4.5vh", borderRadius: 8}}>
+                        Create a new listing
+                    </Button>
                 </Box>
                 {rooms.map((event : AvailableRoomsObject, index : number) => (
                     <Grid key={index} sx={{height: "30vh", width: { sm:"100vw", md: "60vw"}, borderRadius: 8}}>

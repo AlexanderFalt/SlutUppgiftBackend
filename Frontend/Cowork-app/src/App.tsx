@@ -6,6 +6,8 @@ import SignUp from './components/PreAuth/SignUp';
 import SignIn from './components/PreAuth/SignIn';
 import NavBar from './components/PreAuth/NavBar';
 import HomePage from './components/PostAuth/HomePageConsumer.tsx';
+// import HomePage2 from './components/PostAuth/HomePageOwner.tsx';
+
 
 function App() {
   return (
