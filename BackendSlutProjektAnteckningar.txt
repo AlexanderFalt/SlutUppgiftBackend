@@ -1,0 +1,10 @@
+FRONTEND
+Registering (KLAR) - En simpel sida där en användare kan skapa ett konto.
+Logga In (KLAR). - En logga in sida där en användare kan sätta in sina inloggnings uppgifter för att komma in i hemsidan.
+Se sina bokningar(INTE BÖRJAT). - Mappa ut bokningarna som finns i databasen. Här så ska det finnas en knapp som det står Claim(Boka).
+                                  Och om rummet är bokat så står det två andra knappar som är Unclaim(Ta bort bokning) och Update claim(Uppdatera bokning).
+BUG! Se till att allt är responsivit - Sidan speciellet home page är inte responsivit än så länge.
+
+
+
+BACKEND:

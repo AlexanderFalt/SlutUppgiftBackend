@@ -5,7 +5,7 @@ import {
 
 export default function NavBar() {
     return(
-        <AppBar position={'static'} color={'secondary'} sx={{padding: "1%"}}>
+        <AppBar position={'fixed'} color={'secondary'} sx={{padding: "1%"}}>
             <Typography variant='h2' sx={{fontWeight: "700"}}>
                 Coworkify
             </Typography>
