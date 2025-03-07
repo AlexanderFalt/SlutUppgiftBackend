@@ -5,8 +5,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import SignUp from './components/PreAuth/SignUp';
 import SignIn from './components/PreAuth/SignIn';
 import NavBar from './components/PreAuth/NavBar';
-import HomePage from './components/PostAuth/HomePageConsumer.tsx';
-// import HomePage2 from './components/PostAuth/HomePageOwner.tsx';
+// import HomePage from './components/PostAuth/HomePageConsumer.tsx';
+import HomePage2 from './components/PostAuth/HomePageOwner.tsx';
 
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
           <Routes>
             <Route path='/' element={<SignUp/>}/>
             <Route path='/sign-in' element={<SignIn/>}/>
-            <Route path='/home-page' element={<HomePage/>}/>
+            <Route path='/home-page' element={<HomePage2/>}/>
           </Routes>
         </ThemeProvider>
       </BrowserRouter>
