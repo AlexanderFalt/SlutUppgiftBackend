@@ -5,105 +5,69 @@ import {
     CardContent,
     Box,
     Typography,
-    Button,
     FormControl,
     InputLabel,
     OutlinedInput,
     InputAdornment,
-    TextField
+    Button
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Grid from '@mui/material/Grid2';
+import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
+import axios from 'axios';
+
+type AvailableRoomsObject = {
+    _id?: string,
+    address: string,
+    name: string,
+    roomNumber: string,
+    roomOpens: string,
+    roomCloses: string,
+    capacity: number,
+    type: "workspace" | "conference" | "",
+}
 
 export default function HomePage() {
+    const [rooms, setRooms] = useState<AvailableRoomsObject[]>([]);
+    const [fullRooms, setFullRooms] = useState<AvailableRoomsObject[]>([]);
+    const [amountOfResults, setAmountOfResults] = useState<number>(0); 
     
-    type AvailableRoomsObject = {
-        adress: string,
-        company: string,
-        roomNumber: number,
-        roomOpens: string,
-        roomCloses: string,
-        bookingStatus: boolean,
-        capacity: number,
-        typeOfWorkspace: string,
+    const fetchRooms = () => {
+            axios.get('/api/room')
+            .then((response) => {
+                console.log(response.data);
+                setRooms(response.data);
+                setFullRooms(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching rooms:", error);
+            });
     }
 
-    const [rooms, setRooms] = useState<AvailableRoomsObject[]>([
-        {
-            adress: "Södrakungsvägen 8",
-            company: "WeWorks",
-            roomNumber: 1,
-            roomOpens: "8:00", 
-            roomCloses: "17:30",
-            bookingStatus: true,
-            capacity: 5,
-            typeOfWorkspace: "Konferencerum",
-        },
-        {
-            adress: "Norrtäljevägen 15",
-            company: "SuperWorkers",
-            roomNumber: 2,
-            roomOpens: "7:00", 
-            roomCloses: "18:00",
-            bookingStatus: false,
-            capacity: 8,
-            typeOfWorkspace: "Arbetsplats",
-        },
-        {
-            adress: "Östermalmgatan 3",
-            company: "Workify",
-            roomNumber: 3,
-            roomOpens: "8:00", 
-            roomCloses: "20:00",
-            bookingStatus: false,
-            capacity: 10,
-            typeOfWorkspace: "Konferencerum",
-        },
-        {
-            adress: "Drottninggatan 47",
-            company: "Weworks",
-            roomNumber: 4,
-            roomOpens: "8:00", 
-            roomCloses: "17:30",
-            bookingStatus: false,
-            capacity: 6,
-            typeOfWorkspace: "Arbetsplats",
-        },
-        {
-            adress: "Göttavägen 17",
-            company: "Weworks",
-            roomNumber: 5,
-            roomOpens: "8:00", 
-            roomCloses: "17:30",
-            bookingStatus: false,
-            capacity: 8,
-            typeOfWorkspace: "Konferencerum",
-        },
-    ])
+    useEffect(() => {
+        fetchRooms();
+    }, []);
 
-    const changeBookingStatusToTrue = (room: AvailableRoomsObject) => {
-        setRooms((prevRooms : AvailableRoomsObject[]) =>
-          prevRooms.map((r) => 
-            r.adress === room.adress 
-              ? { ...r, bookingStatus: true } 
-              : r
-          )
-        );
-    };
-
-    const changeBookingStatusToFalse = (room: AvailableRoomsObject) => {
-        setRooms((prevRooms : AvailableRoomsObject[]) =>
-          prevRooms.map((r) => 
-            r.adress === room.adress 
-              ? { ...r, bookingStatus: false } 
-              : r
-          )
-        );
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const query = event.target.value;
+    
+        if (query.trim() === "") {
+          setRooms(fullRooms);
+          setAmountOfResults(0);
+        } else {
+          const filteredRooms = fullRooms.filter(room =>
+            room.address.toLowerCase().includes(query.toLowerCase()) ||
+            room.roomNumber.toLowerCase().includes(query.toLowerCase()) ||
+            room.name.toLowerCase().includes(query.toLowerCase())
+          );
+          setRooms(filteredRooms);
+          setAmountOfResults(filteredRooms.length);
+        }
     };
 
     return(
-        <Grid container spacing={5} sx={{
+        <Grid container spacing={2} sx={{
             marginTop: "10vh",
             paddingTop: "5vh",
             width: "100%", 
@@ -112,11 +76,11 @@ export default function HomePage() {
             justifyContent: "center", 
             flexDirection: "column",
             }}>
-                <Box sx={{ height: "20vh", width: { sm:"100vw", md: "60vw"}, margin: "0 0 4vh 0"}}>
+                <Box sx={{ height: "13.5vh" , width: { sm:"100vw", md: "60vw"}}}>
                     <Typography variant="h3" color={'primary'} sx={{fontSize: "clamp(1.65rem, 2.5vw, 3rem)", fontWeight: "500", width: {xs: "100vw", md: "50vw"}, padding: "0 0.5vh"}} gutterBottom>
-                        Find your workspace.
-                    </Typography>
-                    <FormControl fullWidth sx={{ borderRadius: 8, textAlign: "center", marginBottom: "2vh"}}>
+                        Your listed workspaces
+                    </Typography>    
+                    <FormControl fullWidth sx={{ borderRadius: 8, textAlign: "center"}} onChange={handleSearchChange}>
                         <InputLabel htmlFor="outlined-adornment">Search</InputLabel>
                         <OutlinedInput
                         sx={{
@@ -133,38 +97,15 @@ export default function HomePage() {
                         }
                         />
                     </FormControl>
-                    <Box sx={{display: "flex", width: "100%"}}>
-                        <Typography variant="h6" sx={{width: "49%", padding: "0 1.75vh"}}>Start date: </Typography>
-                        <Typography variant="h6" sx={{width: "49%", padding: "0 1.75vh"}}>End date: </Typography>
-                    </Box>
-                    <Box sx={{display: "flex", width: "100%"}}>
-                        <TextField type='date' variant="outlined" fullWidth
-                            sx={{
-                                borderRadius: 8,
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                borderRadius: 8,
-                                }
-                            }}
-                            >
-
-                        </TextField>
-                        <TextField type='date' variant="outlined" fullWidth
-                            sx={{
-                                borderRadius: 8,
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                borderRadius: 8,
-                                }
-                            }}
-                            >
-
-                        </TextField>
-                    </Box>
                 </Box>
+                <Typography variant="body2" sx={{ marginLeft: "2%", fontSize: "clamp(1rem, 2.5vw, 1.15rem)", color: (amountOfResults ? "gray" : "white"), width: "60vw"}}>
+                    Your search gave back {amountOfResults} results.
+                </Typography>
                 {rooms.map((event : AvailableRoomsObject, index : number) => (
                     <Grid key={index} sx={{height: "30vh", width: { sm:"100vw", md: "60vw"}, borderRadius: 8}}>
                         <Card sx={{width: "100%", height: "100%", boxShadow: "none", borderRadius: 8, padding: "0.5%"}}>
                             <Paper elevation={4} sx={{height: "100%", width: "100%", border: "1px solid silver", borderRadius: 8, padding: "1%"}}>
-                                <CardHeader title={event.company} subheader={event.adress}/>
+                                <CardHeader title={event.name} subheader={event.address}/>
                                 <CardContent sx={{display: "flex", alignItems: "center", justifyContent: "center"}}>
                                     <Box  sx={{width: "100%", height: "82.5%"}}>
                                         <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Opening time: <Box component={'span'} sx={{fontWeight: "500"}}>{event.roomOpens}</Box></Typography>
@@ -173,27 +114,19 @@ export default function HomePage() {
                                     </Box>
                                     <Box sx={{width: "100%", height: "82.5%"}}>
                                         <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Room name or number: <Box component={'span'} sx={{fontWeight: "500"}}> {event.roomNumber}</Box></Typography>
-                                        <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Type of workspace: <Box component={'span'} sx={{fontWeight: "500"}}>{event.typeOfWorkspace}</Box></Typography>
+                                        <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Type of workspace: <Box component={'span'} sx={{fontWeight: "500"}}>{event.type}</Box></Typography>
                                     </Box>
                                 </CardContent>
-                                <Box sx={{height: "17.5%"}}>
-                                    {event.bookingStatus ? 
-                                        (
-                                            <Box sx={{display: "flex", height: "100%"}}>
-                                                <Button variant="outlined" sx={{width:"50%", height: "100%", borderTopRightRadius: 0, borderBottomRightRadius: 0, borderTopLeftRadius: 16, borderBottomLeftRadius: 16}}>
-                                                    Update booking
-                                                </Button>
-                                                <Button variant="contained" onClick={() => changeBookingStatusToFalse(event)} sx={{width:"49.8%", height: "100%", borderTopRightRadius: 16, borderBottomRightRadius: 16, borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}>
-                                                    Delete booking
-                                                </Button>
-                                            </Box>
-                                        ) :
-                                        (
-                                            <Button variant="outlined" onClick={() => changeBookingStatusToTrue(event)} sx={{width:"99%", height: "100%", borderRadius: 6}}>
-                                                Book room
-                                            </Button>
-                                        )
-                                    }
+                                <Box sx={{height: "17.5%", display: "flex", justifyContent: "space-evenly"}}>
+                                    <Button variant="contained" color="secondary" sx={{width:"48%", height: "100%", borderRadius: 6, margin: 0}}>
+                                        Book room
+                                    </Button>
+                                    <Paper elevation={6} sx={{borderRadius: 6, height: "100%", width: "48%", border: "1px solid silver", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                        <Typography color="secondary" variant="h5">
+                                            <Box component="span" sx={{fontWeight: 600}}>1</Box> / 8
+                                        </Typography>
+                                        <PersonIcon fontSize="large" color="secondary" sx={{position: "absolute", right: "23%"}}/>
+                                    </Paper>
                                 </Box>
                             </Paper>
                         </Card>

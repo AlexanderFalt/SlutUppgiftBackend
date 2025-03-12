@@ -196,7 +196,7 @@ export default function HomePage() {
                                     <Box sx={{width: {md:"95%", sm: "90%"}, display: "flex", alignItems: "center"}}>
                                         <CardHeader title={temporary}/>
                                     </Box>
-                                    <Box sx={{width: {md:"5%", sm: "10%"}, display: "flex", alignItems: "center"}}>
+                                    <Box sx={{width: {md:"5%", sm: "10%"}, display: "flex", alignItems: "center", cursor: "pointer"}}>
                                         <CloseIcon fontSize={'large'} onClick={() => showRoomForm()} sx={{
                                             borderRadius: 2,
                                             transition: "all 0.35s",

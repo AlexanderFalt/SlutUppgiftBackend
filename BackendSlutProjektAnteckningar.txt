@@ -1,26 +1,23 @@
 FRONTEND
 Allmänt: Registering (KLAR) - En simpel sida där en användare kan skapa ett konto.
 Allmänt: Logga In (KLAR). - En logga in sida där en användare kan sätta in sina inloggnings uppgifter för att komma in i hemsidan.
-Användare: Se bokningar(BÖRJAT). - Mappa ut bokningarna som finns i databasen. Här så ska det finnas en knapp som det står Claim(Boka).
+Användare: Se rum(KLAR). - Mappa ut rummen som finns i databasen. Här så ska det finnas en knapp som det står Claim(Boka).
                                    Och om rummet är bokat så står det två andra knappar som är Unclaim(Ta bort bokning) och Update claim(Uppdatera bokning).
-Rumägare: Se rum(INTE BÖRJAT) - En rumsägare ska ha en annan tab där dom ska kunna gå in i hemsidan där dom kan lägga upp rummen som dom äger och hantera deras rum.
+Rumägare: Se rum(KLAR) - En rumsägare ska ha en annan tab där dom ska kunna gå in i hemsidan där dom kan lägga upp rummen som dom äger och hantera deras rum.
+Allmänt: Börja fixa Navigation bar till efter authentisering (INTE BÖRJAT).
 Administrator: Se statistik(INTE BÖRJAT) - En administrator ska kunna gå in och se statistik om hur allting ser ut dom ska också kunna Ta bort rum om dom behövs.
 
-BUG! Se till att allt är responsivit - Sidan speciellet home page är inte responsivit än så länge.
-
-
-
-
+Saker att fixa:
+Se till att det vissas för rumsägare hur många bookningar det finns på ett rum.
 
 BACKEND:
 Allmänt: Salting och hashing ska ske när en användare reigstrerar sig. (INTE BÖRJAT) - När en användare registerar sig ska hashing att man gör en unik string på deras lösenord ske
                                                                                        Sedan ska salting ske vilket är att man lägger till några karaktärer på deras lösenord.
-Allmänt: Skapa databas(INTE BÖRJAT) - Skapa databas för forum och rum som ska vissas.
+Allmänt: Skapa JWT när en användare loggar  in eller skapar ett konot. (INTE BÖRJAT)
+Allmänt: Skapa databas(KLART) - Skapa databas för rum som ska vissas.
 Allmänt Börja sätta up server.js (INTE BÖRJAT) - Sätt up main server som hanterar logik.
-
-
-
-
+Rumsägare: Fixa logiken hos rummsägare (KLART).
+Användare: Fixa logiken hos användare så att dom kan se alla rum(INTE BÖRJAT).
 
 Teknikstack
 • Backend: Node.js med Express.js.
