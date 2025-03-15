@@ -32,6 +32,7 @@ export default function HomePage() {
     const [rooms, setRooms] = useState<AvailableRoomsObject[]>([]);
     const [fullRooms, setFullRooms] = useState<AvailableRoomsObject[]>([]);
     const [amountOfResults, setAmountOfResults] = useState<number>(0); 
+    // const temporary : string = "TemporaryUser01";
     
     const fetchRooms = () => {
             axios.get('/api/room')
@@ -78,7 +79,7 @@ export default function HomePage() {
             }}>
                 <Box sx={{ height: "13.5vh" , width: { sm:"100vw", md: "60vw"}}}>
                     <Typography variant="h3" color={'primary'} sx={{fontSize: "clamp(1.65rem, 2.5vw, 3rem)", fontWeight: "500", width: {xs: "100vw", md: "50vw"}, padding: "0 0.5vh"}} gutterBottom>
-                        Your listed workspaces
+                        Available rooms
                     </Typography>    
                     <FormControl fullWidth sx={{ borderRadius: 8, textAlign: "center"}} onChange={handleSearchChange}>
                         <InputLabel htmlFor="outlined-adornment">Search</InputLabel>

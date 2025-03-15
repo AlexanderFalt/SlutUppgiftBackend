@@ -1,4 +1,4 @@
-import Room from '../models/roomsSchema.model.ts';
+import Room from '../models/room.model.ts';
 import { Request, Response } from 'express';
 
 export const createRoom = async(req: Request, res: Response) : Promise<void> => {

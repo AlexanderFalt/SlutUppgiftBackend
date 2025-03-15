@@ -1,11 +1,26 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
-const userSchema = new mongoose.Schema({
+export interface IUser extends mongoose.Document {
+  username: string;
+  name?: string;
+  emailAdress: string;
+  password: string;
+  role: 'User' | 'Admin' | 'Owner';
+}
+
+const userSchema = new mongoose.Schema<IUser>({
     username: { type: String, required: true, unique: true },
+    name: {type: String}, // Optional to make having orderd the room easier.
+    emailAdress: {type: String, unique: true, required: true},
     password: { type: String, required: true },
     role: { type: String, enum: ['User', 'Admin', 'Owner'], default: 'User' },
 });
 
-const User = mongoose.model('User', userSchema)
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  });
 
-export default User;
+  export default mongoose.model<IUser>('User', userSchema);

@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './components/Wrappers/HomePage.tsx';
 import SignUp from './components/Wrappers/RegisterWrapper.tsx';
 import SignIn from './components/Wrappers/SignInWrapper.tsx';
+import Settings from './components/Wrappers/SettingsPage.tsx';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
             <Route path='/' element={<SignUp/>}/>
             <Route path='/sign-in' element={<SignIn/>}/>
             <Route path='/home-page' element={<HomePage/>}/>
+            <Route path='/settings' element={<Settings/>} />
           </Routes>
         </ThemeProvider>
       </BrowserRouter>
