@@ -9,20 +9,86 @@ import {
     InputLabel,
     OutlinedInput,
     IconButton,
-    Link
+    Link,
+    Grow
 } from "@mui/material";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function SignUp() {
     const [ showPasswordOne, setShowPasswordOne ] = useState(false)
     const [ showPasswordTwo, setShowPasswordTwo ] = useState(false)
+    
+    const [ error, setError ] = useState<string>();
+    const [ errorBool, setErrorBool ] = useState(false);
+
+    const [ username, setUsername ] = useState<string>();
+    const [ name, setFullName ] = useState<string>();
+    const [ emailAddress, setEmail ] = useState<string>();
+    const [ password, setPassword ] = useState<string>();
+    const [ secondPassword, setSecondPassword ] = useState<string>();
+
+    const navigate = useNavigate();
+    
+    const handleSubmit = async (event: React.FormEvent) => {
+        if (!emailAddress) {
+            setErrorBool(true);
+            setError("Email field left empty")
+        }
+        if (!username) {
+            setErrorBool(true);
+            setError("Username field left empty")
+        }
+        if (!password) {
+            setErrorBool(true);
+            setError("Password field left empty")
+        }
+        if (!secondPassword) {
+            setErrorBool(true);
+            setError("Place enter the password in the second field")
+        }
+        if (password !== secondPassword) {
+            setErrorBool(true);
+            setError("The passwords must match")   
+        }
+        event.preventDefault();
+        setError("");
+
+        const payload = {
+            username,
+            name: name ?? null,
+            emailAddress,
+            password,
+        };
+
+        console.log(payload)
+
+        try {
+          const response = await axios.post(
+            "/api/users/register",
+            payload,
+            { withCredentials: true }
+          );
+    
+          console.log("Login successful", response.data);
+          navigate("/home-page")
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setErrorBool(true);
+                setError(err.message);
+            } else {
+                setErrorBool(true);
+                setError("Login failed");
+            }
+        }
+    };
 
     const handleMouseDownPassword = (event : React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
     };
-
     const handleMouseUpPassword = (event : React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
     };
@@ -43,14 +109,16 @@ export default function SignUp() {
                 justifyContent: "center",
                 flexDirection: "column",
             }}>
-                <TextField variant="outlined" fullWidth placeholder="Username" label='Username' required/>
-                <TextField variant="outlined" fullWidth placeholder="Full name" label='Full name'/>
-                <TextField variant="outlined" fullWidth placeholder="Email adress" label='Email adress' required/>
+                <TextField variant="outlined" fullWidth placeholder="Username" label='Username' onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} value={username} required/>
+                <TextField variant="outlined" fullWidth placeholder="Full name" label='Full name' onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)} value={name}/>
+                <TextField variant="outlined" fullWidth placeholder="Email adress" label='Email adress' required onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} value={emailAddress}/>
                 <FormControl variant="outlined" fullWidth sx={{margin: "0.5%"}}>
                     <InputLabel htmlFor="outlined-adornment-password" required>Password</InputLabel>
                     <OutlinedInput
                         id="outlined-adornment-password"
                         type={showPasswordOne ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                         endAdornment={
                         <InputAdornment position="end">
                             <IconButton
@@ -72,6 +140,8 @@ export default function SignUp() {
                     <OutlinedInput
                         id="outlined-adornment-password"
                         type={showPasswordTwo ? 'text' : 'password'}
+                        value={secondPassword}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSecondPassword(e.target.value)}
                         endAdornment={
                         <InputAdornment position="end">
                             <IconButton
@@ -89,8 +159,15 @@ export default function SignUp() {
                     }/>
                 </FormControl>
 
+
+                <Box sx={{ width: "100%", height: "8%", margin: "1% 0%"}}>
+                    <Grow in={errorBool}  timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
+                        <Typography sx={{width: "99%", height: "99%", padding: "1%", borderRadius: 6, backgroundColor: "#FF5C5C", color: "white"}}>{error}</Typography>
+                    </Grow>
+                </Box>
+
                 <Box sx={{display: "flex", width: "100%"}}>
-                    <Button variant="outlined" LinkComponent={Link} href={'/home-page'} fullWidth>Sign up</Button>
+                    <Button variant="outlined" onClick={handleSubmit} fullWidth>Sign up</Button>
                     <Button variant="text" LinkComponent={Link} href={'/sign-in'} fullWidth>
                         Already have an account?
                     </Button>

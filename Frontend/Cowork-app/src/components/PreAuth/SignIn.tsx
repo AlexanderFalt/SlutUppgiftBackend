@@ -9,14 +9,53 @@ import {
     InputLabel,
     OutlinedInput,
     IconButton,
-    Link
+    Link,
+    Grow
 } from "@mui/material";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import axios from "axios";
 import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 export default function SignIn() {
     const [ showPassword, setShowPassword ] = useState(false)
+    const [ password, setPassword ] = useState<string>("");
+    const [ username, setUsername] = useState<string>("");
+    const [ error, setError ] = useState<string>(""); 
+    const [ errorBool, setErrorBool ] = useState(false);
+
+    const navigate = useNavigate();
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        if (password === undefined) {
+            setErrorBool(true);
+            setError("Password feild left empty")
+        }
+        if (username === undefined) {
+            setErrorBool(true);
+            setError("Username feild left empty")
+        }
+        event.preventDefault();
+        setError("");
+    
+        try {
+          const response = await axios.post(
+            "/api/users/login",
+            { username, password },
+            { withCredentials: true }
+          );
+    
+          console.log("Login successful", response.data);
+          navigate("/home-page")
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Login failed");
+            }
+        }
+      };
 
     const handleMouseDownPassword = (event : React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
@@ -42,11 +81,26 @@ export default function SignIn() {
                 justifyContent: "center",
                 flexDirection: "column",
             }}>
-                <TextField variant="outlined" fullWidth placeholder="Username or email" label='Username' required/>
+                <TextField 
+                    variant="outlined" 
+                    fullWidth 
+                    placeholder="Username or email" 
+                    label='Username' 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} 
+                    value={username}
+                    required
+                />
                 <FormControl variant="outlined" fullWidth sx={{margin: "0.5%"}}>
-                    <InputLabel htmlFor="outlined-adornment-password" required>Password</InputLabel>
+                    <InputLabel 
+                        htmlFor="outlined-adornment-password" 
+                        required
+                    >
+                        Password
+                    </InputLabel>
                     <OutlinedInput
                         id="outlined-adornment-password"
+                        value={password}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} 
                         type={showPassword ? 'text' : 'password'}
                         endAdornment={
                         <InputAdornment position="end">
@@ -64,9 +118,14 @@ export default function SignIn() {
                         </InputAdornment>
                     }/>
                 </FormControl>
+                <Box sx={{ width: "100%", height: "20%"}}>
+                    <Grow in={errorBool}  timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
+                        <Typography sx={{width: "99%", height: "99%", padding: "1%", borderRadius: 6, backgroundColor: "#FF5C5C", color: "white"}}>{error}</Typography>
+                    </Grow>
+                </Box>
                 <Box sx={{display: "flex", width: "100%"}}>
-                    <Button variant="outlined" LinkComponent={Link} href={'/home-page'} fullWidth>Sign In</Button>
-                    <Button variant="text" LinkComponent={Link} href={'/'} fullWidth>
+                    <Button variant="outlined" onClick={handleSubmit} fullWidth>Sign In</Button>
+                    <Button variant="text"  LinkComponent={Link} href={'/'} fullWidth>
                         Don't have an account?
                     </Button>
                 </Box>

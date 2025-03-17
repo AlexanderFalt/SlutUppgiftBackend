@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 export interface IUser extends mongoose.Document {
   username: string;
   name?: string;
-  emailAdress: string;
+  emailAddress: string;
   password: string;
   role: 'User' | 'Admin' | 'Owner';
 }
@@ -12,7 +12,7 @@ export interface IUser extends mongoose.Document {
 const userSchema = new mongoose.Schema<IUser>({
     username: { type: String, required: true, unique: true },
     name: {type: String}, // Optional to make having orderd the room easier.
-    emailAdress: {type: String, unique: true, required: true},
+    emailAddress: {type: String, required: true},
     password: { type: String, required: true },
     role: { type: String, enum: ['User', 'Admin', 'Owner'], default: 'User' },
 });

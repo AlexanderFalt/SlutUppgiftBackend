@@ -8,22 +8,45 @@ import {
     Grow,
     Button
 } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 export default function NavBar() {
-    const [showMenu, setShowMenu] = useState(false);
+    const [showMenu, setShowMenu] = useState(true);
 
-    // Temporary
-    const username : string = "TemporaryUser01"
-    const name : string = "Alexander Söderström";
-    const role : string = "user"
+    const [role, setRole] = useState<string | null>(null);
+    const [username, setUsername] = useState<string | null>(null);
+        useEffect(() => {
+            const fetchUserRole = async () => {
+                try {
+                    const response = await axios.get("/api/user-role", { withCredentials: true });
+                    console.log(response.data.role + " " + response.data.username)
+                    setRole(response.data.role);
+                    setUsername(response.data.username);
+                } catch (error) {
+                    console.error("Failed to fetch user role", error);
+                }
+            };
+    
+            fetchUserRole();
+        }, []);
 
     type menuItem = {
         title: string,
         path: string,
+    }
+
+    const showRole = () => {
+        if (role === "Owner") {
+            return "Manager"
+        }
+        if (role === "User") {
+            return "Patron"
+        }
+        return "Admin"
     }
 
     const roleBasedItems : menuItem[] = [
@@ -36,17 +59,6 @@ export default function NavBar() {
             path: "/home-page",
         },
     ]
-
-    const getRole = (role : string) => {
-        if (role === "user") {
-            return "Patron"
-        }
-        if (role === "owner") {
-            return "Manager"
-        } else {
-            return "Admin"
-        }
-    }
 
     const handleMenuClick = () => {
         setShowMenu(!showMenu);
@@ -102,9 +114,9 @@ export default function NavBar() {
             <Box sx={{display: "flex", width: {sm: "35%", md: "35%", lg: "37.5%", justifyContent: "right", alignItems: "center"}}}>
                 <Box sx={{marginRight: "2%"}}>
                     <Typography variant='body1' sx={{textAlign: "right", display: {sm: "none", md: "none", lg: "block"}, fontSize:"1.35rem"}}>{username}</Typography>
-                    <Typography variant='body1' sx={{textAlign: "right", display: {sm: "none", md: "none", lg: "block"}, color: "silver"}}>{getRole(role)}</Typography>
+                    <Typography variant='body1' sx={{textAlign: "right", display: {sm: "none", md: "none", lg: "block"}, color: "silver"}}>{showRole()}</Typography>
                 </Box>
-                <Avatar sx={{ width: 56, height: 56, bgcolor: '#B57EDC' }}>{name ? name[0] : username[0]}</Avatar>
+                <Avatar sx={{ width: 56, height: 56, bgcolor: '#B57EDC' }}>{username && username[0]}</Avatar>
             </Box>
         </AppBar>
     )

@@ -1,22 +1,39 @@
-import HomePageConsumer from '../PostAuth/HomePageConsumer.tsx';
-import HomePageOwner from '../PostAuth/HomePageOwner.tsx';
-import NavBarAuth from '../PostAuth/NavBarAuth.tsx';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import HomePageConsumer from "../PostAuth/HomePageConsumer.tsx";
+import HomePageOwner from "../PostAuth/HomePageOwner.tsx";
+import NavBarAuth from "../PostAuth/NavBarAuth.tsx";
 
 export default function HomePage() {
-    const role : string = "user";
+    const [role, setRole] = useState<string | null>(null);
 
-    const showHompage = () => {
-        if(role === "user") {
-            return <HomePageConsumer/>
-        } else if(role === "owner") {
-            return <HomePageOwner/>
+    useEffect(() => {
+        const fetchUserRole = async () => {
+            try {
+                const response = await axios.get("/api/user-role", { withCredentials: true });
+                setRole(response.data.role);
+            } catch (error) {
+                console.error("Failed to fetch user role", error);
+            }
+        };
+
+        fetchUserRole();
+    }, []);
+
+    const showHomepage = () => {
+        if (role === "User") {
+            return <HomePageConsumer />;
+        } else if (role === "Owner") {
+            return <HomePageOwner />;
+        } else {
+            return <p>Loading...</p>; // Show a loading state while fetching
         }
-    }
-    
+    };
+
     return (
         <>
-            <NavBarAuth/>
-            {showHompage()}
+            <NavBarAuth />
+            {showHomepage()}
         </>
-    )
+    );
 }

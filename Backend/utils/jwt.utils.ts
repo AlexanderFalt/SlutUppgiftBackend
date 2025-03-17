@@ -5,8 +5,10 @@ dotenv.config();
 const secret = process.env.JWT_SECRET || '';
 
 if (!secret) {
+    console.log("Couldn't find secret.")
     throw new Error("Missing JWT_SECRET in environment variables.");
 }
 export const generateToken = (payload: object) => {
+    console.log("Making a token.")
     return jwt.sign(payload, secret, { expiresIn: '1h' });
 };
