@@ -84,8 +84,8 @@ export default function SignIn() {
                 <TextField 
                     variant="outlined" 
                     fullWidth 
-                    placeholder="Username or email" 
-                    label='Username' 
+                    placeholder="Username or company name" 
+                    label='Username or company name' 
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} 
                     value={username}
                     required

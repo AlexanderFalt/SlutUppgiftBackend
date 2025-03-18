@@ -11,6 +11,7 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
             name,
             emailAddress,
             password,
+            roleRaise,
             role,
         } = req.body;
 
@@ -29,6 +30,7 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
             name,
             emailAddress,
             password,
+            roleRaise,
             role,
         })
 
@@ -56,7 +58,7 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // Används endast i production
-            sameSite: 'strict',
+            sameSite: 'none',
             maxAge: 60 * 60 * 1000 // 1 timme
         });
 
@@ -73,6 +75,7 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
         const user: IUser | null = await User.findOne({ username }).exec();
         
         if (!user) {
+            console.error("Something went wrong in user.controller.ts: 1")
             res.status(404).json({ message: 'User not found' });
             return
         }
@@ -82,6 +85,7 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
         const isMatch = await bcrypt.compare(password, hashedPassword);
         
         if (!isMatch) {
+            console.error("Something went wrong in user.controller.ts: 2")
             res.status(401).json({ message: 'Invalid credentials' });
             return 
         }

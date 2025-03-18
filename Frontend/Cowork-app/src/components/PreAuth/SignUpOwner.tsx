@@ -42,6 +42,10 @@ export default function SignUp() {
             setErrorBool(true);
             setError("Username field left empty")
         }
+        if (!name) {
+            setErrorBool(true);
+            setError("Username field left empty")
+        }
         if (!password) {
             setErrorBool(true);
             setError("Password field left empty")
@@ -57,11 +61,15 @@ export default function SignUp() {
         event.preventDefault();
         setError("");
 
+
+
         const payload = {
             username,
             name: name ?? null,
             emailAddress,
+            roleRaise: false,
             password,
+            role: "Owner",
         };
 
         console.log(payload)
@@ -96,7 +104,7 @@ export default function SignUp() {
     return(
         <Box sx={{height: "100vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column"}}>
             <Typography variant="h3" color={'primary'} sx={{fontSize: "clamp(1.45rem, 2.5vw, 2.75rem)", fontWeight: "600", width: {xs: "100vw", md: "50vw"}, padding: "0 2.5vh"}} gutterBottom>
-                Create an account to become a Patron.
+                Create an account to become an Manager.
             </Typography>
             <Paper elevation={6} sx={{
                 height: "60vh", 
@@ -109,8 +117,8 @@ export default function SignUp() {
                 justifyContent: "center",
                 flexDirection: "column",
             }}>
-                <TextField variant="outlined" fullWidth placeholder="Username" label='Username' onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} value={username} required/>
-                <TextField variant="outlined" fullWidth placeholder="Full name" label='Full name' onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)} value={name}/>
+                <TextField variant="outlined" fullWidth placeholder="Username" label='Company name' onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} value={username} required/>
+                <TextField variant="outlined" fullWidth placeholder="Full name" label='Address' onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)} value={name} required/>
                 <TextField variant="outlined" fullWidth placeholder="Email adress" label='Email adress' required onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} value={emailAddress}/>
                 <FormControl variant="outlined" fullWidth sx={{margin: "0.5%"}}>
                     <InputLabel htmlFor="outlined-adornment-password" required>Password</InputLabel>
@@ -172,10 +180,10 @@ export default function SignUp() {
                         Already have an account?
                     </Button>
                 </Box>
-
+                
                 <Box sx={{display: "flex", width: "100%"}}>
-                    <Button variant="outlined" LinkComponent={Link} href={'/register-owner'} fullWidth>
-                        Want to sign up as an manager instead?
+                    <Button variant="text" LinkComponent={Link} href={'/'} fullWidth>
+                        Want to sign up as an patron instead?
                     </Button>
                 </Box>
             </Paper>

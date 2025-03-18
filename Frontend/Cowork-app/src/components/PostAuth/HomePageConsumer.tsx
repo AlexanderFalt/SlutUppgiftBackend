@@ -35,7 +35,7 @@ export default function HomePage() {
     // const temporary : string = "TemporaryUser01";
     
     const fetchRooms = () => {
-            axios.get('/api/room')
+            axios.get('/api/room', { withCredentials: true })
             .then((response) => {
                 console.log(response.data);
                 setRooms(response.data);

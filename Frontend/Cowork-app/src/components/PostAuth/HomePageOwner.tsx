@@ -36,21 +36,21 @@ type AvailableRoomsObject = {
 
 export default function HomePage() {
     const [roomFieldVisablity, setRoomFieldVisablity] = useState(false);
-    const temporary = "Super Workplace"; // Temporarly name the company.
     const [rooms, setRooms] = useState<AvailableRoomsObject[]>([]);
     const [fullRooms, setFullRooms] = useState<AvailableRoomsObject[]>([]);
+    const [roleRaise, setRoleRaise] = useState<boolean>(false);
+    const [username, setUsername] = useState<string>("");
     const [roomData, setRoomData] = useState<AvailableRoomsObject>({
         address: "",
-        name: temporary,
+        name: "",
         roomNumber: "",
         roomOpens: "",
         roomCloses: "",
         capacity: 0,
         type: "",
       });
-
     const fetchRooms = () => {
-            axios.get('/api/room')
+            axios.get('/api/room', { withCredentials: true })
             .then((response) => {
                 console.log(response.data);
                 setRooms(response.data);
@@ -62,8 +62,34 @@ export default function HomePage() {
     }
 
     useEffect(() => {
-        fetchRooms();
+        const fetchUserRole = async () => {
+            try {
+                const response = await axios.get("/api/user-role", { withCredentials: true });
+                console.log(response.data.roleRaise + " " + response.data.username);
+                setRoleRaise(response.data.roleRaise);
+                setUsername(response.data.username);
+            } catch (error) {
+                console.error("Failed to fetch user role", error);
+            }
+        };
+    
+        fetchUserRole();
     }, []);
+    
+    useEffect(() => {
+        if (roleRaise === true) {
+            fetchRooms();
+        }
+    }, [roleRaise]);
+
+    useEffect(() => {
+        if (username) {
+            setRoomData((prevRoomData) => ({
+                ...prevRoomData,
+                name: username,
+            }));
+        }
+    }, [username]);
 
     const createListing = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -91,6 +117,7 @@ export default function HomePage() {
             console.log(`ERR: Need to say when the room closes.`)
             return
         }
+        console.log(roomData)
         setRoomFieldVisablity(!roomFieldVisablity)
         axios.post('/api/room', roomData)
             .then((response) => {
@@ -194,7 +221,7 @@ export default function HomePage() {
                             >
                                 <Box sx={{width: "100%", display: "flex"}}>
                                     <Box sx={{width: {md:"95%", sm: "90%"}, display: "flex", alignItems: "center"}}>
-                                        <CardHeader title={temporary}/>
+                                        <CardHeader title={username}/>
                                     </Box>
                                     <Box sx={{width: {md:"5%", sm: "10%"}, display: "flex", alignItems: "center", cursor: "pointer"}}>
                                         <CloseIcon fontSize={'large'} onClick={() => showRoomForm()} sx={{

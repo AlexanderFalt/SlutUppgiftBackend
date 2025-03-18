@@ -6,6 +6,7 @@ export interface IUser extends mongoose.Document {
   name?: string;
   emailAddress: string;
   password: string;
+  roleRaise?: boolean;
   role: 'User' | 'Admin' | 'Owner';
 }
 
@@ -14,6 +15,7 @@ const userSchema = new mongoose.Schema<IUser>({
     name: {type: String}, // Optional to make having orderd the room easier.
     emailAddress: {type: String, required: true},
     password: { type: String, required: true },
+    roleRaise: {type: Boolean},
     role: { type: String, enum: ['User', 'Admin', 'Owner'], default: 'User' },
 });
 

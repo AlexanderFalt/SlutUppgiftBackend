@@ -34,11 +34,6 @@ export default function NavBar() {
             fetchUserRole();
         }, []);
 
-    type menuItem = {
-        title: string,
-        path: string,
-    }
-
     const showRole = () => {
         if (role === "Owner") {
             return "Manager"
@@ -49,16 +44,28 @@ export default function NavBar() {
         return "Admin"
     }
 
-    const roleBasedItems : menuItem[] = [
-        {
-            title: "Available rooms",
-            path: "/home-page",
-        },
-        {
-            title: "My Bookings",
-            path: "/home-page",
-        },
-    ]
+    
+    type menuItem = {
+        title: string,
+        path: string,
+    }
+    let roleBasedItems: menuItem[] = [];
+    if (role === "User") {    
+        roleBasedItems = [
+            { title: "Available rooms", path: "/home-page" },
+            { title: "My Bookings", path: "/home-page" },
+        ];
+    } else if (role === "Owner") {
+        roleBasedItems = [
+            { title: "My rooms", path: "/home-page" },
+        ];
+    } else if (role === "Admin") {    
+        roleBasedItems = [
+            { title: "Account management", path: "/home-page" },
+            { title: "Manager applications", path: "/home-page" },
+            { title: "Available rooms", path: "/home-page" },
+        ];
+    }
 
     const handleMenuClick = () => {
         setShowMenu(!showMenu);

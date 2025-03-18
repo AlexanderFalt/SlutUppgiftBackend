@@ -8,6 +8,11 @@ export const getUserRole = (req: Request, res: Response): void => {
             return;
         }
 
+        if (req.user.role === "Owner") {
+            console.log("User Data in Backend:", req.user.role + " " + req.user.username + " " + req.user.roleRaise);
+            res.status(200).json({ role: req.user.role, username: req.user.username, roleRaise: req.user.roleRaise })
+            return
+        }
         console.log("User Data in Backend:", req.user.role + " " + req.user.username); // Debugging log
         res.status(200).json({ role: req.user.role, username: req.user.username });
     } catch (error) {
