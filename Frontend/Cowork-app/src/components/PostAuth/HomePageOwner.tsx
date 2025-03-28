@@ -15,10 +15,9 @@ import {
     Select,
     MenuItem
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Grid from '@mui/material/Grid2';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
@@ -49,17 +48,19 @@ export default function HomePage() {
         capacity: 0,
         type: "",
       });
-    const fetchRooms = () => {
-            axios.get('/api/room', { withCredentials: true })
+
+    const fetchRooms = useCallback(() => {
+        axios.get('/api/room', { withCredentials: true })
             .then((response) => {
                 console.log(response.data);
-                setRooms(response.data);
-                setFullRooms(response.data);
+                const filteredRooms = response.data.filter((room: AvailableRoomsObject) => room.name === username);
+                setRooms(filteredRooms);
+                setFullRooms(filteredRooms);
             })
             .catch((error) => {
                 console.error("Error fetching rooms:", error);
             });
-    }
+    }, [username]);
 
     useEffect(() => {
         const fetchUserRole = async () => {
@@ -77,10 +78,10 @@ export default function HomePage() {
     }, []);
     
     useEffect(() => {
-        if (roleRaise === true) {
+        if (roleRaise) {
             fetchRooms();
         }
-    }, [roleRaise]);
+    }, [roleRaise, fetchRooms]);
 
     useEffect(() => {
         if (username) {
@@ -151,7 +152,7 @@ export default function HomePage() {
     
         if (query.trim() === "") {
           setRooms(fullRooms);
-        } else {
+        } else { 
           const filteredRooms = fullRooms.filter(room =>
             room.address.toLowerCase().includes(query.toLowerCase()) ||
             room.roomNumber.toLowerCase().includes(query.toLowerCase())
@@ -159,6 +160,8 @@ export default function HomePage() {
           setRooms(filteredRooms);
         }
     };
+
+    const isFocused = true; // Temporary
 
     return(
         <Grid container spacing={2} sx={{
@@ -170,9 +173,9 @@ export default function HomePage() {
             justifyContent: "center", 
             flexDirection: "column",
             }}>
-                <Box sx={{ height: (roomFieldVisablity ? "50vh" : "20vh"), width: { sm:"100vw", md: "60vw"}}}>
+                <Box sx={{ width: { sm:"100vw", md: "60vw"}}}>
                     
-                    <Typography variant="h3" color={'primary'} sx={{fontSize: "clamp(1.65rem, 2.5vw, 3rem)", fontWeight: "500", width: {xs: "100vw", md: "50vw"}, padding: "0 0.5vh"}} gutterBottom>
+                    <Typography variant="h3" color={'primary'} sx={{fontSize: "clamp(1.35rem, 2.5vw, 2.5rem)", fontWeight: "500", width: {xs: "100vw", md: "50vw"}, padding: "0 0.5vh"}} gutterBottom>
                         Your listed workspaces
                     </Typography>
                     
@@ -199,7 +202,7 @@ export default function HomePage() {
                     </Button>
                     
                     <Grow in={roomFieldVisablity}  timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
-                        <Box sx={{ marginTop: "2vh" }}>
+                        <Box sx={{ marginTop: "2vh", border: "1px solid blue" }}>
                         <Card
                             sx={{
                             width: "100%",
@@ -236,8 +239,8 @@ export default function HomePage() {
                                     <CardContent sx={{display: "flex", justifyContent: "center"}}>
                                         <Box  sx={{width: "100%", height: "85.5%"}}>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
-                                                <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Opening time:</Typography>
-                                                <TextField variant="standard" value={roomData.roomOpens} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(1rem, 2.5vw, 1.25rem)" }, }, }}
+                                                <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Opening time:</Typography>
+                                                <TextField variant="standard" value={roomData.roomOpens} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
                                                     onChange={(e) => {
                                                         setRoomData((prev) => ({
                                                         ...prev, 
@@ -246,8 +249,8 @@ export default function HomePage() {
                                                     }/>
                                             </Box>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
-                                                <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Closing time:</Typography>
-                                                <TextField variant="standard" value={roomData.roomCloses} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(1rem, 2.5vw, 1.25rem)" }, }, }}
+                                                <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Closing time:</Typography>
+                                                <TextField variant="standard" value={roomData.roomCloses} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
                                                     onChange={(e) =>
                                                         setRoomData((prev) => ({
                                                         ...prev,
@@ -256,8 +259,8 @@ export default function HomePage() {
                                                     }/>
                                             </Box>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
-                                                <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Capacity:</Typography>
-                                                <TextField variant="standard" type="number" value={roomData.capacity} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(1rem, 2.5vw, 1.25rem)" }, }, }}
+                                                <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Capacity:</Typography>
+                                                <TextField variant="standard" type="number" value={roomData.capacity} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
                                                     onChange={(e) =>
                                                         setRoomData((prev) => ({
                                                         ...prev,
@@ -268,8 +271,8 @@ export default function HomePage() {
                                         </Box>
                                         <Box sx={{width: "100%", height: "82.5%"}}>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
-                                                <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Room name or number:</Typography>
-                                                <TextField variant="standard" value={roomData.roomNumber} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(1rem, 2.5vw, 1.25rem)" }, }, }}
+                                                <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Room name or number:</Typography>
+                                                <TextField variant="standard" value={roomData.roomNumber} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
                                                     onChange={(e) =>
                                                         setRoomData((prev) => ({
                                                         ...prev,
@@ -278,8 +281,8 @@ export default function HomePage() {
                                                     }/>
                                             </Box>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
-                                                <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Type of workspace:</Typography>
-                                                <Select value={roomData.type} variant="standard" sx={{width: "30%", fontSize: "clamp(1rem, 2.5vw, 1.25rem)", marginLeft: '6px'}}
+                                                <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Type of workspace:</Typography>
+                                                <Select value={roomData.type} variant="standard" sx={{width: "30%", fontSize: "clamp(0.95rem, 2.5vw, 1rem)", marginLeft: '6px'}}
                                                     onChange={(e) => 
                                                         setRoomData((prev) => ({
                                                             ...prev,
@@ -295,8 +298,8 @@ export default function HomePage() {
                                                 </Select>
                                             </Box>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
-                                                <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Location:</Typography>
-                                                <TextField variant="standard" value={roomData.address} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(1rem, 2.5vw, 1.25rem)" }, }, }}
+                                                <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Location:</Typography>
+                                                <TextField variant="standard" value={roomData.address} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
                                                     onChange={(e) =>
                                                         setRoomData((prev) => ({
                                                         ...prev,
@@ -315,38 +318,56 @@ export default function HomePage() {
                         </Box>
                     </Grow>
                 </Box>
-                {rooms.map((event : AvailableRoomsObject, index : number) => (
-                    <Grid key={index} sx={{height: "30vh", width: { sm:"100vw", md: "60vw"}, borderRadius: 8}}>
-                        <Card sx={{width: "100%", height: "100%", boxShadow: "none", borderRadius: 8, padding: "0.5%"}}>
-                            <Paper elevation={4} sx={{height: "100%", width: "100%", border: "1px solid silver", borderRadius: 8, padding: "1%"}}>
-                                <CardHeader title={event.name} subheader={event.address}/>
-                                <CardContent sx={{display: "flex", alignItems: "center", justifyContent: "center"}}>
-                                    <Box  sx={{width: "100%", height: "82.5%"}}>
-                                        <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Opening time: <Box component={'span'} sx={{fontWeight: "500"}}>{event.roomOpens}</Box></Typography>
-                                        <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Closeing time: <Box component={'span'} sx={{fontWeight: "500"}}>{event.roomCloses}</Box></Typography>
-                                        <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Capacity: <Box component={'span'} sx={{fontWeight: "500"}}>{event.capacity}</Box></Typography>
+                {rooms.map((event : AvailableRoomsObject, index : number) => {
+                    return(
+                        <Grid key={index} sx={{ width: { sm:"100vw", md: "60vw"}, borderRadius: 8}}>
+                            <Card sx={{width: "100%", height: "100%", boxShadow: "none", borderRadius: 8, padding: "0.5%"}}>
+                                <Paper elevation={4} sx={{height: "100%", width: "100%", border: "1px solid silver", borderRadius: 8, padding: "1%", paddingBottom: "2%"}}>
+                                    <CardHeader title={event.name} subheader={event.address}/>
+                                    <CardContent sx={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+                                        <Box  sx={{width: "100%", height: "82.5%"}}>
+                                            <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Opening time: <Box component={'span'} sx={{fontWeight: "500"}}>{event.roomOpens}</Box></Typography>
+                                            <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Closeing time: <Box component={'span'} sx={{fontWeight: "500"}}>{event.roomCloses}</Box></Typography>
+                                            <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Capacity: <Box component={'span'} sx={{fontWeight: "500"}}>{event.capacity}</Box></Typography>
+                                        </Box>
+                                        <Box sx={{width: "100%", height: "82.5%"}}>
+                                            <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Room name or number: <Box component={'span'} sx={{fontWeight: "500"}}> {event.roomNumber}</Box></Typography>
+                                            <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Type of workspace: <Box component={'span'} sx={{fontWeight: "500"}}>{event.type}</Box></Typography>
+                                        </Box>
+                                    </CardContent>
+                                    <Box sx={{height: "17.5%", display: "flex", justifyContent: "space-evenly"}}>
+                                        <Button variant="outlined" onClick={() => event._id && removeListing(event._id)} color="error" sx={{width:"40%", height: "5vh", borderRadius: 6, margin: 0}}>
+                                            <DeleteOutlineIcon/>
+                                            Remove listing
+                                        </Button>
+                                        <Button variant="outlined" color="info" sx={{width:"40%", height: "5vh", borderRadius: 6, margin: 0}}>
+                                            Update listing
+                                        </Button>
+                                        <Paper elevation={6} sx={{borderRadius: 6, height: "5vh", width: "16%", border: "1px solid silver", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                            <Typography color="secondary" variant="h5">
+                                                <Box component="span" sx={{fontWeight: 600}}>1</Box> / 8
+                                            </Typography>
+                                        </Paper>
                                     </Box>
-                                    <Box sx={{width: "100%", height: "82.5%"}}>
-                                        <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Room name or number: <Box component={'span'} sx={{fontWeight: "500"}}> {event.roomNumber}</Box></Typography>
-                                        <Typography  variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(1rem, 2.5vw, 1.25rem)"}}>Type of workspace: <Box component={'span'} sx={{fontWeight: "500"}}>{event.type}</Box></Typography>
-                                    </Box>
-                                </CardContent>
-                                <Box sx={{height: "17.5%", display: "flex", justifyContent: "space-evenly"}}>
-                                    <Button variant="outlined" onClick={() => event._id && removeListing(event._id)} color="error" sx={{width:"48%", height: "100%", borderRadius: 6, margin: 0}}>
-                                        <DeleteOutlineIcon/>
-                                        Remove listing
-                                    </Button>
-                                    <Paper elevation={6} sx={{borderRadius: 6, height: "100%", width: "48%", border: "1px solid silver", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                        <Typography color="secondary" variant="h5">
-                                            <Box component="span" sx={{fontWeight: 600}}>1</Box> / 8
-                                        </Typography>
-                                        <PersonIcon fontSize="large" color="secondary" sx={{position: "absolute", right: "23%"}}/>
-                                    </Paper>
-                                </Box>
-                            </Paper>
-                        </Card>
-                    </Grid>
-                ))}               
+                                    <Grow in={isFocused} timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
+                                        <Box sx={{width: "97%", border: "1px solid silver", marginTop: "1%", marginLeft: "1.5%", borderRadius: 6, backgroundColor: "#F0F0F0"}}>
+                                            <Box>
+                                                
+                                            </Box>
+                                            <Box sx={{margin: "0% 1.5%", marginBottom: "2%", display: "flex", justifyContent: "space-evenly"}}>        
+                                            
+                                            </Box>
+                                            <Button variant="contained" onClick={() => console.log("Update room")} sx={{width:"97%", height: "5vh", borderRadius: 6, margin: "1.5%"}}>
+                                                Update Room
+                                            </Button>
+                                        </Box>
+                                    </Grow>
+                                </Paper>
+                            </Card>
+                        </Grid>
+                    )
+                }    
+            )}               
         </Grid>
     )
 }

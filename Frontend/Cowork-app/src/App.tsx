@@ -5,8 +5,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './components/Wrappers/HomePage.tsx';
 import SignUp from './components/Wrappers/RegisterWrapper.tsx';
 import SignIn from './components/Wrappers/SignInWrapper.tsx';
-import Settings from './components/Wrappers/SettingsPage.tsx';
+import SettingsWrapper from './components/Wrappers/SettingsPage.tsx';
 import SignUpOwner from './components/Wrappers/RegisterOwnerWrapper.tsx'
+import BookingsPage from './components/Wrappers/BookingsPage.tsx';
 
 function App() {
   return (
@@ -18,7 +19,8 @@ function App() {
             <Route path='/register-owner' element={<SignUpOwner/>} />
             <Route path='/sign-in' element={<SignIn/>}/>
             <Route path='/home-page' element={<HomePage/>}/>
-            <Route path='/settings' element={<Settings/>} />
+            <Route path='/settings' element={<SettingsWrapper/>} />
+            <Route path='/bookings' element={<BookingsPage/>} />
           </Routes>
         </ThemeProvider>
       </BrowserRouter>

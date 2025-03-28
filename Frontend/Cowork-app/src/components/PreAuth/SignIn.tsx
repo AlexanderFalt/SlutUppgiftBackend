@@ -49,13 +49,18 @@ export default function SignIn() {
           console.log("Login successful", response.data);
           navigate("/home-page")
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError("Login failed");
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 404) {
+                    setError("Could not find the user. Check if it's the correct username and password.");
+                    setErrorBool(true);
+                    return;
+                }
             }
+    
+            setError("Login failed");
+            setErrorBool(true);
         }
-      };
+    }
 
     const handleMouseDownPassword = (event : React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
@@ -118,7 +123,7 @@ export default function SignIn() {
                         </InputAdornment>
                     }/>
                 </FormControl>
-                <Box sx={{ width: "100%", height: "20%"}}>
+                <Box sx={{ width: "100%", height: "20%", margin: "1% 0"}}>
                     <Grow in={errorBool}  timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
                         <Typography sx={{width: "99%", height: "99%", padding: "1%", borderRadius: 6, backgroundColor: "#FF5C5C", color: "white"}}>{error}</Typography>
                     </Grow>
