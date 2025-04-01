@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: ./Backend
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/coworkify
+    volumes:
+      - ./Backend:/app
+      - /app/node_modules
+    depends_on:
+      - mongo
+  frontend:
+    build:
+      context: ./Frontend/Cowork-app
+    ports:
+      - "5173:80"
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

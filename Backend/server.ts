@@ -24,7 +24,8 @@ app.use('/api/bookings', bookingsRoutes)
 app.use('/api/user-role', getRoleRoutes)
 app.use('/api/logout', logoutRoutes)
 
-mongoose.connect('mongodb://localhost:27017/coworkify')
+const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/coworkify';
+mongoose.connect(mongoUri)
     .then(() => {
         console.log('Connected to database')
     }).catch((error) => {
