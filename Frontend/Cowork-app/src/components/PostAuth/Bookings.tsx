@@ -9,6 +9,7 @@ import {
     Grow,
     TextField
 } from "@mui/material";
+import PatronList from './PatronList.tsx';
 import Grid from '@mui/material/Grid2'
 import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
@@ -33,6 +34,10 @@ export default function Bookings() {
             capacity: number,
             type: string
         }
+        userInfo: {
+            username: string,
+            name: string,
+        }
     }
 
     const today = dayjs().format("YYYY-MM-DD");
@@ -46,15 +51,17 @@ export default function Bookings() {
     const fetchBookings = useCallback(async () => {
         try {
             const response = await axios.get('/api/bookings', { withCredentials: true });
+            console.log(response.data)
             const formattedBookings = response.data.bookings.map((booking: bookingFormat) => ({
                 ...booking,
                 startTime: new Date(booking.startTime),  
                 endTime: new Date(booking.endTime),
             }));
-    
+            
+            console.log(formattedBookings)
             setBookings(formattedBookings);
         } catch (error) {
-            console.log(error);
+            console.log(`Error that came up ${error}`);
         }
     }, []);
 
@@ -119,6 +126,7 @@ export default function Bookings() {
 
                     const localStartTime = dayjs.utc(booking.startTime).local().format("HH:mm");
                     const localEndTime = dayjs.utc(booking.endTime).local().format("HH:mm");
+                    const date = dayjs.utc(booking.startTime).local().format("YYYY-MM-DD");
 
                     return (
                     <Grid key={index} sx={{width: "100%", marginBottom: "2%"}}>
@@ -129,10 +137,13 @@ export default function Bookings() {
                                     <Box sx={{width: "50%"}}>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Your booking starts at: <Box component={'span'} sx={{fontWeight: "500"}}>{localStartTime}</Box></Typography>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Your booking ends at: <Box component={'span'} sx={{fontWeight: "500"}}>{localEndTime}</Box></Typography>
+                                        <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Your booking is at: <Box component={'span'} sx={{fontWeight: "500"}}>{date}</Box></Typography>
                                     </Box>
                                     <Box sx={{width: "50%"}}>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Opening times: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.roomInfo.roomOpens} - {booking.roomInfo.roomCloses}</Box></Typography>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Room: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.roomInfo.roomNumber}</Box></Typography>
+                                        <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Name: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.userInfo.name ? booking.userInfo.name : booking.userInfo.username}</Box></Typography>
+
                                     </Box>
                                 </CardContent>
                             </Card>
@@ -153,9 +164,7 @@ export default function Bookings() {
                                 )
                                 }
                                 <Paper elevation={6} sx={{borderRadius: 6, height: "5vh", width: "16%", border: "1px solid silver", display: "flex", justifyContent: "center", alignItems: "center", marginLeft: "1.5%" }}>
-                                    <Typography color="secondary" variant="h5">
-                                        <Box component="span" sx={{fontWeight: 600}}>1</Box> / {booking.roomInfo.capacity}
-                                    </Typography>
+                                    <PatronList eventId={booking.roomId}/>
                                 </Paper>
                             </Box>
                             <Grow in={isFocused} timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>

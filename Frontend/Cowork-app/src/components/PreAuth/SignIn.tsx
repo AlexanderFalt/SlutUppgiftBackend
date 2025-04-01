@@ -125,7 +125,9 @@ export default function SignIn() {
                 </FormControl>
                 <Box sx={{ width: "100%", height: "20%", margin: "1% 0"}}>
                     <Grow in={errorBool}  timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
-                        <Typography sx={{width: "99%", height: "99%", padding: "1%", borderRadius: 6, backgroundColor: "#FF5C5C", color: "white"}}>{error}</Typography>
+                        <Box sx={{border: "1px solid red", width: "100%", height: "3vh", borderRadius: 2, display: "flex", justifyContent: "center", alignItems: "center", marginRight: "0.5%"}}>
+                            <Typography sx={{color: "red"}}>{error}</Typography>    
+                        </Box>
                     </Grow>
                 </Box>
                 <Box sx={{display: "flex", width: "100%"}}>

@@ -14,6 +14,7 @@ import {
     TextField,
 } from "@mui/material";
 import { useState, useEffect } from "react";
+import PatronList from './PatronList.tsx';
 import Grid from '@mui/material/Grid2';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
@@ -38,7 +39,6 @@ export default function HomePage() {
     const [bookingInFocus, setBookingInFocus] = useState<{ [key: string]: boolean }>({});
     const [startTime, setStartTime] = useState<string>();
     const [endTime, setEndTime] = useState<string>();
-
     const today = dayjs().format("YYYY-MM-DD");
     const tomorrow = dayjs().add(1, "day").format("YYYY-MM-DD");
     const [selectDate, setSelectDate] = useState<string>(today);
@@ -172,9 +172,11 @@ export default function HomePage() {
                         />
                     </FormControl>
                 </Box>
-                <Typography variant="body2" sx={{ marginLeft: "2%", fontSize: "clamp(1rem, 2.5vw, 1.15rem)", color: (amountOfResults ? "gray" : "white"), width: "60vw"}}>
-                    Your search gave back {amountOfResults} results.
-                </Typography>
+                <Grow in={!!amountOfResults} >
+                    <Typography variant="body2" sx={{ marginLeft: "2%", fontSize: "clamp(1rem, 2.5vw, 1.15rem)", color: (amountOfResults ? "gray" : "white"), width: "60vw"}}>
+                        Your search gave back {amountOfResults} results.
+                    </Typography>
+                </Grow>
                 {rooms.map((event : AvailableRoomsObject, index : number) => {
                     if (!event._id) return null;
                     const isFocused = bookingInFocus[event._id] || false;
@@ -206,7 +208,7 @@ export default function HomePage() {
                                     }
                                     <Paper elevation={6} sx={{borderRadius: 6, height: "5vh", width: "48%", border: "1px solid silver", display: "flex", justifyContent: "center", alignItems: "center" }}>
                                         <Typography color="secondary" variant="h5">
-                                            <Box component="span" sx={{fontWeight: 600}}>1</Box> / 8
+                                            <PatronList eventId={event._id}/>
                                         </Typography>
                                     </Paper>
                                 </Box>

@@ -16,6 +16,7 @@ import {
     MenuItem
 } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
+import PatronList from './PatronList.tsx';
 import Grid from '@mui/material/Grid2';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import SearchIcon from '@mui/icons-material/Search';
@@ -37,6 +38,7 @@ export default function HomePage() {
     const [roomFieldVisablity, setRoomFieldVisablity] = useState(false);
     const [rooms, setRooms] = useState<AvailableRoomsObject[]>([]);
     const [fullRooms, setFullRooms] = useState<AvailableRoomsObject[]>([]);
+    const [roomInFocus, setRoomInFocus] = useState<{ [key: string]: boolean }>({});
     const [roleRaise, setRoleRaise] = useState<boolean>(false);
     const [username, setUsername] = useState<string>("");
     const [roomData, setRoomData] = useState<AvailableRoomsObject>({
@@ -48,6 +50,16 @@ export default function HomePage() {
         capacity: 0,
         type: "",
       });
+
+    const [updatePayload, setUpdatePayload] = useState<AvailableRoomsObject>({
+        address: "",
+        name: "",
+        roomNumber: "",
+        roomOpens: "",
+        roomCloses: "",
+        capacity: 0,
+        type: "",
+    });
 
     const fetchRooms = useCallback(() => {
         axios.get('/api/room', { withCredentials: true })
@@ -132,7 +144,7 @@ export default function HomePage() {
 
     const removeListing = (id : string) => {
         if (id !== undefined) {
-            axios.delete(`api/room/${id}`)
+            axios.delete(`api/room/${id}`, {withCredentials: true})
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -140,6 +152,41 @@ export default function HomePage() {
             .catch((error) => {
                 console.error(error)
             })
+        }
+    }
+
+    const updateListing = async(id : string | undefined) => {
+        if (updatePayload.type === "") {
+            console.log(`ERR: Can't send the type was never defined.`)
+            return
+        }
+        if (updatePayload.capacity === 0) {
+            console.log(`ERR: A room can't have capacity of zero people.`)
+            return
+        }
+        if (updatePayload.address === "") {
+            console.log(`ERR: Address need's to be defined.`)
+            return
+        }
+        if (updatePayload.roomNumber === "") {
+            console.log(`ERR: Need to say what the room is called.`)
+            return
+        }
+        if (updatePayload.roomOpens === "") {
+            console.log(`ERR: Need to write when the room opens.`)
+            return
+        }
+        if (updatePayload.roomCloses === "") {
+            console.log(`ERR: Need to say when the room closes.`)
+            return
+        }
+        if (id !== undefined) {
+            try{
+                await axios.put(`/api/room/${id}`, updatePayload, {withCredentials: true});
+                fetchRooms()
+            } catch(error) {
+                console.error(error)
+            }
         }
     }
 
@@ -161,7 +208,22 @@ export default function HomePage() {
         }
     };
 
-    const isFocused = true; // Temporary
+    const ChangeRoomFocus = (roomId: string | undefined, cancel: boolean = false, event: AvailableRoomsObject) => {
+        if (!roomId) return;
+        setUpdatePayload({
+            address: event.address,
+            name: event.name,
+            roomNumber: event.roomNumber,
+            roomOpens: event.roomOpens,
+            roomCloses: event.roomCloses,
+            capacity: event.capacity,
+            type: event.type,
+        })
+        setRoomInFocus((prev) => ({
+            ...prev,
+            [roomId]: cancel ? false : !prev[roomId],
+        }));
+    };
 
     return(
         <Grid container spacing={2} sx={{
@@ -202,7 +264,7 @@ export default function HomePage() {
                     </Button>
                     
                     <Grow in={roomFieldVisablity}  timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
-                        <Box sx={{ marginTop: "2vh", border: "1px solid blue" }}>
+                        <Box sx={{ marginTop: "2vh" }}>
                         <Card
                             sx={{
                             width: "100%",
@@ -319,6 +381,8 @@ export default function HomePage() {
                     </Grow>
                 </Box>
                 {rooms.map((event : AvailableRoomsObject, index : number) => {
+                    if (!event._id) return null;
+                    const isFocused = roomInFocus[event._id] || false;
                     return(
                         <Grid key={index} sx={{ width: { sm:"100vw", md: "60vw"}, borderRadius: 8}}>
                             <Card sx={{width: "100%", height: "100%", boxShadow: "none", borderRadius: 8, padding: "0.5%"}}>
@@ -336,28 +400,208 @@ export default function HomePage() {
                                         </Box>
                                     </CardContent>
                                     <Box sx={{height: "17.5%", display: "flex", justifyContent: "space-evenly"}}>
-                                        <Button variant="outlined" onClick={() => event._id && removeListing(event._id)} color="error" sx={{width:"40%", height: "5vh", borderRadius: 6, margin: 0}}>
-                                            <DeleteOutlineIcon/>
-                                            Remove listing
-                                        </Button>
-                                        <Button variant="outlined" color="info" sx={{width:"40%", height: "5vh", borderRadius: 6, margin: 0}}>
-                                            Update listing
-                                        </Button>
+                                        { isFocused ? (
+                                                <Button variant="outlined" onClick={() => ChangeRoomFocus(event._id, true, event)} color="error" sx={{width:"80%", height: "5vh", borderRadius: 6, margin: 0}}>
+                                                    Cancel listing changes
+                                                </Button>
+                                            ) : (
+                                                <>
+                                                    <Button variant="outlined" onClick={() => event._id && removeListing(event._id)} color="error" sx={{width:"40%", height: "5vh", borderRadius: 6, margin: 0}}>
+                                                        <DeleteOutlineIcon/>
+                                                        Remove listing
+                                                    </Button>
+                                                    <Button variant="outlined" color="info" onClick={() => ChangeRoomFocus(event._id, false, event)} sx={{width:"40%", height: "5vh", borderRadius: 6, margin: 0}}>
+                                                        Update listing
+                                                    </Button>
+                                                </>
+                                            )
+                                        }
                                         <Paper elevation={6} sx={{borderRadius: 6, height: "5vh", width: "16%", border: "1px solid silver", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                            <Typography color="secondary" variant="h5">
-                                                <Box component="span" sx={{fontWeight: 600}}>1</Box> / 8
-                                            </Typography>
+                                            <PatronList eventId={event._id}/>
                                         </Paper>
                                     </Box>
                                     <Grow in={isFocused} timeout={{ enter: 500, exit: 0 }} mountOnEnter unmountOnExit>
                                         <Box sx={{width: "97%", border: "1px solid silver", marginTop: "1%", marginLeft: "1.5%", borderRadius: 6, backgroundColor: "#F0F0F0"}}>
-                                            <Box>
-                                                
+                                            <Box sx={{margin: "0% 1.5%", marginBottom: "2%", display: "flex", justifyContent: "space-evenly", flexDirection: "column"}}>        
+                                                <Box sx={{ width: "100%", marginTop: "1%", display: "flex", justifyContent: "space-evenly"}}>
+                                                    <TextField
+                                                        sx={{
+                                                            width: "100%",
+                                                            "& .MuiOutlinedInput-root": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& .MuiOutlinedInput-notchedOutline": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& input": { 
+                                                                textAlign: "center", 
+                                                                fontSize: "clamp(0.95rem, 2.5vw, 1rem)" 
+                                                            },
+                                                        }}
+                                                        slotProps={{
+                                                            inputLabel: {
+                                                              shrink: true,
+                                                            },
+                                                        }}
+                                                        variant="outlined"
+                                                        label="Opening time"
+                                                        value={updatePayload.roomOpens}
+                                                        onChange={(e) =>
+                                                            setUpdatePayload((prev) => ({
+                                                            ...prev,
+                                                            roomOpens: e.target.value,
+                                                        }))}
+                                                        type="time"
+                                                    />
+                                                    <TextField
+                                                        sx={{
+                                                            width: "100%",
+                                                            "& .MuiOutlinedInput-root": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& .MuiOutlinedInput-notchedOutline": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& input": { 
+                                                                textAlign: "center", 
+                                                                fontSize: "clamp(0.95rem, 2.5vw, 1rem)" 
+                                                            },
+                                                        }}
+                                                        slotProps={{
+                                                            inputLabel: {
+                                                              shrink: true,
+                                                            },
+                                                        }}
+                                                        variant="outlined"
+                                                        label="Room name or number"
+                                                        value={updatePayload.roomNumber}
+                                                        onChange={(e) =>
+                                                            setUpdatePayload((prev) => ({
+                                                            ...prev,
+                                                            roomNumber: e.target.value,
+                                                        }))}
+                                                    />
+                                                </Box>
+                                                <Box sx={{width: "100%", margin: "0.5% 0", display: "flex", justifyContent: "space-evenly"}}>
+                                                    <TextField
+                                                        sx={{
+                                                            width: "100%",
+                                                            "& .MuiOutlinedInput-root": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& .MuiOutlinedInput-notchedOutline": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& input": { 
+                                                                textAlign: "center", 
+                                                                fontSize: "clamp(0.95rem, 2.5vw, 1rem)" 
+                                                            },
+                                                        }}
+                                                        slotProps={{
+                                                            inputLabel: {
+                                                              shrink: true,
+                                                            },
+                                                        }}
+                                                        variant="outlined"
+                                                        label="Closing time"
+                                                        value={updatePayload.roomCloses}
+                                                        type="time"
+                                                        onChange={(e) =>
+                                                            setUpdatePayload((prev) => ({
+                                                            ...prev,
+                                                            roomCloses: e.target.value,
+                                                        }))}
+                                                    />
+                                                    <TextField
+                                                        sx={{
+                                                            width: "100%",
+                                                            "& .MuiOutlinedInput-root": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& .MuiOutlinedInput-notchedOutline": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& input": { 
+                                                                textAlign: "center", 
+                                                                fontSize: "clamp(0.95rem, 2.5vw, 1rem)" 
+                                                            },
+                                                        }}
+                                                        slotProps={{
+                                                            inputLabel: {
+                                                              shrink: true,
+                                                            },
+                                                        }}
+                                                        variant="outlined"
+                                                        label="Type of workspace"
+                                                        value={updatePayload.type}
+                                                        onChange={(e) =>
+                                                            setUpdatePayload((prev) => ({
+                                                            ...prev,
+                                                            type: e.target.value as "" | "workspace" | "conference",
+                                                        }))}
+                                                    />
+                                                </Box>
+                                                <Box sx={{ width: "100%", display: "flex", justifyContent: "space-evenly"}}>
+                                                    <TextField
+                                                        sx={{
+                                                            width: "100%",
+                                                            "& .MuiOutlinedInput-root": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& .MuiOutlinedInput-notchedOutline": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& input": { 
+                                                                textAlign: "center", 
+                                                                fontSize: "clamp(0.95rem, 2.5vw, 1rem)" 
+                                                            },
+                                                        }}
+                                                        slotProps={{
+                                                            inputLabel: {
+                                                              shrink: true,
+                                                            },
+                                                        }}
+                                                        variant="outlined"
+                                                        label="Capacity"
+                                                        value={updatePayload.capacity}
+                                                        onChange={(e) =>
+                                                            setUpdatePayload((prev) => ({
+                                                            ...prev,
+                                                            capacity: Number(e.target.value),
+                                                        }))}
+                                                    />
+                                                    <TextField
+                                                        sx={{
+                                                            width: "100%",
+                                                            "& .MuiOutlinedInput-root": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& .MuiOutlinedInput-notchedOutline": {
+                                                                borderRadius: 6, 
+                                                            },
+                                                            "& input": { 
+                                                                textAlign: "center", 
+                                                                fontSize: "clamp(0.95rem, 2.5vw, 1rem)" 
+                                                            },
+                                                        }}
+                                                        slotProps={{
+                                                            inputLabel: {
+                                                              shrink: true,
+                                                            },
+                                                        }}
+                                                        variant="outlined"
+                                                        label="Location"
+                                                        value={updatePayload.address}
+                                                        onChange={(e) =>
+                                                            setUpdatePayload((prev) => ({
+                                                            ...prev,
+                                                            address: e.target.value,
+                                                        }))}
+                                                    />
+                                                </Box>
+        
                                             </Box>
-                                            <Box sx={{margin: "0% 1.5%", marginBottom: "2%", display: "flex", justifyContent: "space-evenly"}}>        
-                                            
-                                            </Box>
-                                            <Button variant="contained" onClick={() => console.log("Update room")} sx={{width:"97%", height: "5vh", borderRadius: 6, margin: "1.5%"}}>
+                                            <Button variant="contained" onClick={() => updateListing(event._id)} sx={{width:"97%", height: "5vh", borderRadius: 6, margin: "1.5%"}}>
                                                 Update Room
                                             </Button>
                                         </Box>

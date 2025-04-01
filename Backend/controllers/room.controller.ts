@@ -1,4 +1,5 @@
 import Room from '../models/room.model.ts';
+import Booking from '../models/booking.model.ts';
 import { Request, Response } from 'express';
 
 export const createRoom = async(req: Request, res: Response) : Promise<void> => {
@@ -45,6 +46,8 @@ export const getRooms = async(req: Request, res: Response) :  Promise<void> => {
 export const removeRoom = async(req: Request, res: Response) : Promise<void> => {
     try {
         const { id } = req.params;
+        const deletedBookings = await Booking.deleteMany({roomId: id});
+        console.log(`Succesfully deleted the following bookings: \n${deletedBookings}`)
         const room = await Room.findByIdAndDelete(id);
         if (!room) {
           res.status(404).json({ message: 'Room not found' });
@@ -53,5 +56,39 @@ export const removeRoom = async(req: Request, res: Response) : Promise<void> => 
     } catch(error) {
         console.error(error);
         res.status(500).json({ message: 'Deletion Error'})
+    }
+}
+
+export const updateRoom = async(req: Request, res: Response) : Promise<void> => {
+    try {
+        const {id} = req.params;
+        
+        const {
+            address,
+            name,
+            roomNumber,
+            roomOpens,
+            roomCloses,
+            capacity,
+            type,
+        } = req.body;
+        
+        console.log(`This was the ID: ${id} \n\n This was the Payload: \n ${address}\n${name}\n${roomNumber}\n${roomOpens}\n${roomCloses}\n${capacity}\n${type}\n`);
+        
+        const updatedRoom = await Room.findByIdAndUpdate(
+            id,
+            { address, name, roomNumber, roomOpens, roomCloses, capacity, type },
+            { new: true, runValidators: true }
+        );
+      
+        if (!updatedRoom) {
+            res.status(404).json({ message: 'Room not found' });
+            return;
+        }
+
+        res.status(204).send()
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({ message: 'Update Error'})
     }
 }

@@ -42,7 +42,6 @@ export const createBooking = async(req: Request, res: Response) => {
         console.error("Error saving booking:", error);
     }
 }
-
 export const getBookings = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
@@ -55,17 +54,17 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
 
         if (role === "User") {
             query = { userId: _id };
-        } else if (role === "Owner") {
+        } 
+        else if (role === "Owner") {
             const ownedRooms = await Room.find({ name: username }).select("_id");
-
             if (ownedRooms.length === 0) {
                 res.json({ bookings: [] });
                 return;
             }
-
             const roomIds = ownedRooms.map(room => room._id);
             query = { roomId: { $in: roomIds } };
-        } else {
+        } 
+        else {
             res.status(403).json({ message: "Forbidden" });
             return;
         }
@@ -81,12 +80,19 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
         const rooms = await Room.find({ _id: { $in: roomIds } }).lean();
         const roomMap = new Map(rooms.map(room => [room._id.toString(), room]));
 
-        const bookingsWithRoomInfo = bookings.map(booking => ({
+        const userIds = bookings.map(booking => booking.userId);
+        const users = await User.find({ _id: { $in: userIds } })
+            .select("_id name username") // <-- Only return these fields
+            .lean();
+        const userMap = new Map(users.map(user => [user._id.toString(), user]));
+
+        const bookingsWithDetails = bookings.map(booking => ({
             ...booking,
             roomInfo: roomMap.get(booking.roomId.toString()) || null,
+            userInfo: userMap.get(booking.userId.toString()) || null,
         }));
 
-        res.json({ bookings: bookingsWithRoomInfo });
+        res.json({ bookings: bookingsWithDetails });
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch bookings" });
     }
@@ -166,3 +172,30 @@ export const removeBooking = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const getAllRoomBookings = async(req: Request, res: Response ) : Promise<void> => {
+    const { id } = req.params;
+
+    if (!req.user) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+
+    try {
+        const bookings = await Booking.find({ roomId: id })
+        
+        const bookingAvatarFormat = await Promise.all(
+            bookings.map(async (booking) => {
+                const user = await User.findOne({ _id: booking.userId });
+                return {
+                    username: user?.username,
+                };
+            })
+        );
+
+        res.status(200).json({ bookings: bookingAvatarFormat })
+    } catch(err) {
+        console.error(err)
+        res.status(500).json({ message: "Server Error: When getting all the bookings" })
+    }
+}
