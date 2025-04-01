@@ -1,7 +1,10 @@
+/*
 import { forwardRef } from "react";
 import { Box, Paper, Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+
+
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
 
@@ -100,3 +103,5 @@ const SmallNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
 SmallNav.displayName = "SmallNav";
 
 export default SmallNav;
+
+*/
