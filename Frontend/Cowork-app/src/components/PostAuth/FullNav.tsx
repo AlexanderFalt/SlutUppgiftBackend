@@ -21,7 +21,7 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
 
   const handleLogout = () => {
     try {
-      axios.post("/logout", {}, { withCredentials: true });
+      axios.post("/api/users/logout", {}, { withCredentials: true });
       navigate("/sign-in");
       console.log("Succesfully logged out.");
     } catch (e) {
@@ -41,15 +41,16 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
     ];
   } else if (userRole === "Admin") {
     roleBasedItems = [
-      { title: "Account management", path: "/home-page" },
-      { title: "Manager applications", path: "/home-page" },
+      { title: "Manager applications", path: "/ManagerApplication" },
+      { title: "Account management", path: "/ManageAccount" },
       { title: "Available rooms", path: "/home-page" },
+      { title: "Bookings", path: "/bookings" },
     ];
   }
 
   return (
     <Box
-      ref={ref} // Attach ref here
+      ref={ref}
       sx={{
         position: "absolute",
         height: "87.5vh",

@@ -9,6 +9,7 @@ Administrator: Se statistik(INTE BÖRJAT) - En administrator ska kunna gå in oc
 
 Saker att fixa:
 Se till att det vissas för rumsägare hur många bookningar det finns på ett rum.
+Ska se till att  
 
 BACKEND:
 Allmänt: Salting och hashing ska ske när en användare reigstrerar sig. (INTE BÖRJAT) - När en användare registerar sig ska hashing att man gör en unik string på deras lösenord ske

@@ -82,7 +82,7 @@ export default function SignUp() {
           );
     
           console.log("Login successful", response.data);
-          navigate("/home-page")
+          navigate("/sign-in")
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setErrorBool(true);

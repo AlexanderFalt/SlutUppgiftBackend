@@ -34,12 +34,11 @@ type AvailableRoomsObject = {
     type: "workspace" | "conference" | "",
 }
 
-export default function HomePage() {
+export default function HomePageAdmin() {
     const [roomFieldVisablity, setRoomFieldVisablity] = useState(false);
     const [rooms, setRooms] = useState<AvailableRoomsObject[]>([]);
     const [fullRooms, setFullRooms] = useState<AvailableRoomsObject[]>([]);
     const [roomInFocus, setRoomInFocus] = useState<{ [key: string]: boolean }>({});
-    const [roleRaise, setRoleRaise] = useState<boolean>(false);
     const [username, setUsername] = useState<string>("");
     const [roomData, setRoomData] = useState<AvailableRoomsObject>({
         address: "",
@@ -65,21 +64,18 @@ export default function HomePage() {
         axios.get('/api/room', { withCredentials: true })
             .then((response) => {
                 console.log(response.data);
-                const filteredRooms = response.data.filter((room: AvailableRoomsObject) => room.name === username);
-                setRooms(filteredRooms);
-                setFullRooms(filteredRooms);
+                setRooms(response.data);
+                setFullRooms(response.data);
             })
             .catch((error) => {
                 console.error("Error fetching rooms:", error);
             });
-    }, [username]);
+    }, []);
 
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
                 const response = await axios.get("/api/users/getRole", { withCredentials: true });
-                console.log(response.data.roleRaise + " " + response.data.username);
-                setRoleRaise(response.data.roleRaise);
                 setUsername(response.data.username);
             } catch (error) {
                 console.error("Failed to fetch user role", error);
@@ -88,21 +84,6 @@ export default function HomePage() {
     
         fetchUserRole();
     }, []);
-    
-    useEffect(() => {
-        if (roleRaise) {
-            fetchRooms();
-        }
-    }, [roleRaise, fetchRooms]);
-
-    useEffect(() => {
-        if (username) {
-            setRoomData((prevRoomData) => ({
-                ...prevRoomData,
-                name: username,
-            }));
-        }
-    }, [username]);
 
     const createListing = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -141,6 +122,11 @@ export default function HomePage() {
                 console.log(err)
             })
     }
+
+    
+    useEffect(() => {
+        fetchRooms();
+    }, [fetchRooms]);
 
     const removeListing = (id : string) => {
         if (id !== undefined) {

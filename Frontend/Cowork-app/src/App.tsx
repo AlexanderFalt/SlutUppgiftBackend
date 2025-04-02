@@ -6,8 +6,10 @@ import HomePage from './components/Wrappers/HomePage.tsx';
 import SignUp from './components/Wrappers/RegisterWrapper.tsx';
 import SignIn from './components/Wrappers/SignInWrapper.tsx';
 import SettingsWrapper from './components/Wrappers/SettingsPage.tsx';
-import SignUpOwner from './components/Wrappers/RegisterOwnerWrapper.tsx'
+import SignUpOwner from './components/Wrappers/RegisterOwnerWrapper.tsx';
 import BookingsPage from './components/Wrappers/BookingsPage.tsx';
+import MangaeAccountWrapper from './components/Wrappers/ManageAccountWrapper.tsx';
+import ManagerApplicationWrapper from './components/Wrappers/ManagerApplicationWrapper.tsx';
 
 function App() {
   return (
@@ -20,7 +22,9 @@ function App() {
             <Route path='/sign-in' element={<SignIn/>}/>
             <Route path='/home-page' element={<HomePage/>}/>
             <Route path='/settings' element={<SettingsWrapper/>} />
+            <Route path='/ManageAccount' element={<MangaeAccountWrapper/>} />
             <Route path='/bookings' element={<BookingsPage/>} />
+            <Route path='/ManagerApplication' element={<ManagerApplicationWrapper/>} />
           </Routes>
         </ThemeProvider>
       </BrowserRouter>

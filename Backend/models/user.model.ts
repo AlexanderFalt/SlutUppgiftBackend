@@ -12,7 +12,7 @@ export interface IUser extends mongoose.Document {
 
 const userSchema = new mongoose.Schema<IUser>({
     username: { type: String, required: true, unique: true },
-    name: {type: String}, // Optional to make having orderd the room easier.
+    name: {type: String}, 
     emailAddress: {type: String, required: true},
     password: { type: String, required: true },
     roleRaise: {type: Boolean},

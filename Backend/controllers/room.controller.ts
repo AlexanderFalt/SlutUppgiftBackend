@@ -1,5 +1,6 @@
 import Room from '../models/room.model.ts';
 import Booking from '../models/booking.model.ts';
+import User from '../models/user.model.ts';
 import { Request, Response } from 'express';
 
 export const createRoom = async(req: Request, res: Response) : Promise<void> => {
@@ -14,6 +15,13 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
             type
         } = req.body;
         
+        const userObject = await User.findOne({username: name})
+        if (userObject?.roleRaise === false) {
+            console.log("The user has not been confirmed")
+            res.status(403).send()
+            return
+        }
+
         const newRoom = new Room({
             address,
             name,
@@ -36,6 +44,7 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
 export const getRooms = async(req: Request, res: Response) :  Promise<void> => {
     try {
         const rooms = await Room.find({}).lean();
+        console.log(`Getting the rooms: \n${rooms}`)
         res.status(200).json(rooms);
     } catch(error) {
         console.error('Error fetching rooms:', error);
@@ -62,7 +71,6 @@ export const removeRoom = async(req: Request, res: Response) : Promise<void> => 
 export const updateRoom = async(req: Request, res: Response) : Promise<void> => {
     try {
         const {id} = req.params;
-        
         const {
             address,
             name,
@@ -72,6 +80,13 @@ export const updateRoom = async(req: Request, res: Response) : Promise<void> => 
             capacity,
             type,
         } = req.body;
+
+        const userObject = await User.findOne({username: name})
+        if (userObject?.roleRaise === false) {
+            console.log("The user has not been confirmed")
+            res.status(403).send()
+            return
+        }
         
         console.log(`This was the ID: ${id} \n\n This was the Payload: \n ${address}\n${name}\n${roomNumber}\n${roomOpens}\n${roomCloses}\n${capacity}\n${type}\n`);
         

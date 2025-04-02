@@ -55,6 +55,11 @@ export default function SignIn() {
                     setErrorBool(true);
                     return;
                 }
+                if (err.response?.status === 418) {
+                    setError("Your application has not yet been confirmed.");
+                    setErrorBool(true);
+                    return;
+                }
             }
     
             setError("Login failed");

@@ -63,8 +63,9 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
             }
             const roomIds = ownedRooms.map(room => room._id);
             query = { roomId: { $in: roomIds } };
-        } 
-        else {
+        } else if(role === "Admin"){
+            query = {}
+        } else {
             res.status(403).json({ message: "Forbidden" });
             return;
         }

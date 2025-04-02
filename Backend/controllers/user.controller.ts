@@ -5,7 +5,6 @@ import { generateToken } from '../utils/jwt.utils.ts';
 
 export const createUser = async(req: Request, res: Response) : Promise<void> => {
     try{
-        console.log("Starting create user function")
         const {
             username,
             name,
@@ -15,16 +14,12 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
             role,
         } = req.body;
 
-        console.log(` This was the data that was sent:\n ${JSON.stringify(req.body)}`)
-
-        console.log(`Checking if ${username} already exists`)
         const existingUser = await User.findOne({ username });
         if (existingUser) {
             res.status(400).json({ message: 'Username is already taken' });
             return;
         }
 
-        console.log("Creating a new user document")
         const newUser = new User({
             username,
             name,
@@ -33,9 +28,7 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
             roleRaise,
             role,
         })
-
-        console.log(` This was the data that was sent:\n ${newUser}`)
-
+        
         try {
             await newUser.save();
         } catch (error : any) {
@@ -47,22 +40,6 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
             console.error("Error saving user:", error);
         }
 
-        console.log("Creating JWT.")
-        const token = generateToken({
-            userId: newUser._id,
-            username: newUser.username,
-            role: newUser.role,
-        });
-
-        console.log("Attaching the JWT as a cookie")
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Används endast i production
-            sameSite: 'none',
-            maxAge: 60 * 60 * 1000 // 1 timme
-        });
-
-        console.log("Starting create user function")
         res.status(201).json({ message: 'User sucessfully created' })
     } catch(error) {
         res.status(500).json({ message: 'Server error' })
@@ -73,10 +50,13 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
     try {
         const { username, password } = req.body;
         const user: IUser | null = await User.findOne({ username }).exec();
-        
         if (!user) {
-            console.error("Something went wrong in user.controller.ts: 1")
             res.status(404).json({ message: 'User not found' });
+            return
+        }
+
+        if (user?.roleRaise === false) {
+            res.status(418).json({ message: 'Awaiting Admin confirmation' })
             return
         }
 
@@ -85,7 +65,6 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
         const isMatch = await bcrypt.compare(password, hashedPassword);
         
         if (!isMatch) {
-            console.error("Something went wrong in user.controller.ts: 2")
             res.status(401).json({ message: 'Invalid credentials' });
             return 
         }
@@ -111,3 +90,28 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
         return 
     }
 }
+
+export const logout = (req: Request, res: Response) => {
+    res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "strict" });
+    res.status(200).json({ message: "Logged out successfully" });
+};
+
+export const getUserRole = (req: Request, res: Response): void => { 
+    try {
+        console.log("Starting controller")
+        if (!req.user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+
+        if (req.user.role === "Owner") {
+            console.log("User Data in Backend:", req.user.role + " " + req.user.username + " " + req.user.roleRaise);
+            res.status(200).json({ role: req.user.role, username: req.user.username, roleRaise: req.user.roleRaise, userId: req.user._id })
+            return
+        }
+        console.log("User Data in Backend:", req.user.role + " " + req.user.username); // Debugging log
+        res.status(200).json({ role: req.user.role, username: req.user.username, userId: req.user._id });
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+};

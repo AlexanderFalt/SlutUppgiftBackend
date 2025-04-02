@@ -21,7 +21,7 @@ export default function NavBar() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get("/api/user-role", { withCredentials: true });
+                const response = await axios.get("/api/users/getRole", { withCredentials: true });
                 console.log(response.data.role + " " + response.data.username)
                 setRole(response.data.role);
                 setUsername(response.data.username);
@@ -39,7 +39,10 @@ export default function NavBar() {
         if (role === "User") {
             return "Patron"
         }
-        return "Admin"
+        if (role === "Admin") {
+            return "Admin"
+        }
+        return "Error"
     }
 
     const handleMenuClick = () => {

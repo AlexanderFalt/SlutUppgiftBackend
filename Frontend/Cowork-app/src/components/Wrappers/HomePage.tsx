@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import HomePageConsumer from "../PostAuth/HomePageConsumer.tsx";
 import HomePageOwner from "../PostAuth/HomePageOwner.tsx";
+import HomePageAdmin from '../PostAuth/HomePageAdmin.tsx';
 import NavBarAuth from "../PostAuth/NavBarAuth.tsx";
 
 export default function HomePage() {
@@ -16,8 +17,8 @@ export default function HomePage() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                    const response = await axios.get("/api/user-role", { withCredentials: true });
-                    setRole(response.data.role);
+                const response = await axios.get("/api/users/getRole", { withCredentials: true });
+                setRole(response.data.role);
             } catch (error) {
                 console.error("Failed to fetch user role", error);
             }
@@ -30,6 +31,8 @@ export default function HomePage() {
             return <HomePageConsumer />;
         } else if (role === "Owner") {
             return <HomePageOwner />;
+        } else if (role === "Admin") {
+            return <HomePageAdmin/>
         } else {
             return <CircularProgress color="secondary" sx={{position: "absolute", left: "50%", top: "50%"}}/>
         }
