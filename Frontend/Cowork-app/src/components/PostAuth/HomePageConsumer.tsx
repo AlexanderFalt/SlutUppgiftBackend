@@ -48,7 +48,6 @@ export default function HomePage() {
             console.log("Fetching Rooms")
             axios.get('/api/room', { withCredentials: true })
             .then((response) => {
-                console.log(response.data);
                 setRooms(response.data);
                 setFullRooms(response.data);
             })
@@ -70,7 +69,6 @@ export default function HomePage() {
         const fetchUserRole = async () => {
             try {
                 const response = await axios.get("/api/users/getRole", { withCredentials: true });
-                console.log(response)
                 setUserId(response.data.userId)
             } catch (error) {
                 console.error("Failed to fetch user role", error);
@@ -111,9 +109,7 @@ export default function HomePage() {
         }
 
         axios.post('/api/bookings', payload, { withCredentials: true })
-            .then((response) => {
-                console.log(response.data);
-            })
+            .then()
             .catch((error) => {
                 console.error("Error fetching rooms:", error);
             });

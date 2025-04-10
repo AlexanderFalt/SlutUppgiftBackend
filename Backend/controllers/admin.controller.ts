@@ -2,11 +2,12 @@ import { Request, Response } from "express"
 import User from '../models/user.model.ts';
 import Room from '../models/room.model.ts';
 import Booking from "../models/booking.model.ts";
+import { logger } from '../utils/logger.utils.ts'
 
 export const getUsers = async(req: Request, res: Response) => {
-    console.log("Getting the users")
     try {
         if (!req.user) {
+            logger.error("The user was not found")
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
@@ -14,6 +15,7 @@ export const getUsers = async(req: Request, res: Response) => {
         const { role, username } = req.user;
 
         if (role !== "Admin") {
+            logger.error("The user was not an Admin")
             res.status(403).json({ message: "Forbidden" });
             return;
         }
@@ -28,17 +30,18 @@ export const getUsers = async(req: Request, res: Response) => {
             role: user.role
         }))
 
+        logger.info("Succesfully got all the users")
         res.status(200).send(modifiedUsers)
     } catch(e) {
-        console.error(`There was an error at getUsers:\n ${e}`)
+        logger.error("There was an error when getting the users")
         res.status(500).send()
     }
 }
 
 export const deleteUser = async(req: Request, res: Response) => {
-    console.log("Deleting the user")
     try {
         if (!req.user) {
+            logger.error("The user was not found")
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
@@ -47,37 +50,43 @@ export const deleteUser = async(req: Request, res: Response) => {
         const { id } = req.params;
 
         if (role !== "Admin") {
+            logger.error("The user was not an Admin")
             res.status(403).json({ message: "Forbidden" });
             return;
         }
 
         const userObject = await User.findById(id);
-        console.log(userObject)
         if ( userObject?.role === "User" ) {
             await Booking.deleteMany({userId: userObject._id});
         } else if( userObject?.role === "Owner" ) {
             await Booking.deleteMany({userId: userObject._id});
             await Room.deleteMany({name: userObject.username});
         } else {
-            console.log("Can not delete Admin user")
             res.status(403).send()
             return
         }
 
         const user = await User.findByIdAndDelete(id);
         if (!user) {
-          res.status(404).json({ message: 'Room not found' });
+            logger.error("The user was not found")
+            res.status(404).json({ message: 'Room not found' });
         }
 
+        logger.info("The user was succesfully removed")
         res.status(200).send({message: `Deleted user: ${user}`})
     } catch(e) {
-        console.error(`There was an error at deleteUser:\n ${e}`)
+        logger.error("There was an error when trying to remove the user")
         res.status(500).send()
     }
 }
 
 export const getRoleRaise = async(req: Request, res: Response) => {
-    console.log("Getting all the users that want a role raise.")
+    if (!req.user) {
+        logger.error("Could not find the user")
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+    
     try {
         const users = await User.find({roleRaise: false, role: "Owner"})
         const modifiedUsers = users.map((user) => ({
@@ -86,9 +95,10 @@ export const getRoleRaise = async(req: Request, res: Response) => {
             email: user.emailAddress,
             id: user._id
         }))
+        logger.info("Succesfully got all the applicants")
         res.status(200).send(modifiedUsers);
     } catch(e) {
-        console.log(e)
+        logger.error("There was an error when trying to find the applicants")
         res.status(500).send()
     }
 }
@@ -99,22 +109,25 @@ export const updateRoleRaise = async(req: Request, res: Response) => {
     } = req.params;
 
     if (!req.user) {
-        res.status(401).send({ error: 'Unauthorized' });
-        return;
+         logger.error("Could not find the user")
+         res.status(401).send({ error: 'Unauthorized' });
+         return;
       }
+
     const role = req.user.role;
 
     if (role !== "Admin") {
+        logger.error("The user was not an Admin")
         res.status(403).send();
         return
     }
 
-    console.log("Trying to update the role raise for user")
     try {
         await User.findOneAndUpdate({_id: id}, {roleRaise: true})
+        logger.info("The role raise was succesfully updated")
         res.status(200).send()
     } catch(e) {
-        console.log(e)
+        logger.error("There was an error when trying to raise the role.")
         res.status(500).send({ error: "Failed to update roleRaise" });
     }
 }

@@ -121,9 +121,11 @@ export default function Bookings() {
         }}>
             <Box sx={{ width: { sm: "100vw", md: "60vw" }}}>
                 {bookings && bookings.map((booking, index) => {
+                    console.log(booking)
                     if (!booking._id) return null;
+                    if (!booking.roomInfo) return null;
+                    if (!booking.userInfo) return null;
                     const isFocused = bookingInFocus[booking._id] || false;
-
                     const localStartTime = dayjs.utc(booking.startTime).local().format("HH:mm");
                     const localEndTime = dayjs.utc(booking.endTime).local().format("HH:mm");
                     const date = dayjs.utc(booking.startTime).local().format("YYYY-MM-DD");
@@ -142,7 +144,7 @@ export default function Bookings() {
                                     <Box sx={{width: "50%"}}>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Opening times: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.roomInfo.roomOpens} - {booking.roomInfo.roomCloses}</Box></Typography>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Room: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.roomInfo.roomNumber}</Box></Typography>
-                                        <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Name: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.userInfo.name ? `${booking.userInfo.name} - ${booking.userInfo.username}` : booking.userInfo.username}</Box></Typography>
+                                        <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Name: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.userInfo?.name ? booking.userInfo.name : booking.userInfo?.username ?? "Unknown user" }</Box></Typography>
 
                                     </Box>
                                 </CardContent>

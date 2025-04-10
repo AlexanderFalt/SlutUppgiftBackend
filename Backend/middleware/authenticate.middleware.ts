@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { IUser } from "../models/user.model.ts";  
 import { IJwtPayload } from "../types/IJwtPayload.ts";  
+import { logger } from '../utils/logger.utils.ts';
 
 dotenv.config();
 
@@ -10,14 +11,14 @@ const secret = process.env.JWT_SECRET as string;
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
     if (!secret) {
-        console.error("JWT_SECRET is missing");
+        logger.error("Could not find the secret key for the JWT")
         res.status(500).send("JWT_SECRET not found in environment variables");
         return
     }
 
-    const token = req.cookies?.token;
+    const token = req.cookies?.tokenAccess;
     if (!token) {
-        console.error("No token found in cookies");
+        logger.error("Could not find the access token.")
         res.status(401).send("Token not found");
         return
     }
@@ -31,9 +32,11 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             role: decoded.role,
         } as IUser;
 
+        logger.info("The token was succesfully authenticated")
+
         next();
     } catch (err) {
-        console.error("Invalid or expired token");
+        logger.error("There was an error when trying to authenticate the token.")
         res.status(403).send("Unauthorized token");
         return
     }

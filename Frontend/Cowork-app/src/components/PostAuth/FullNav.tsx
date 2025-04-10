@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import { Box, Paper, Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
+import { useSocket } from "../../Realtime/useSocket";
 import axios from "axios";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -11,6 +12,7 @@ type Roles = {
 
 const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
   const navigate = useNavigate();
+  const socket = useSocket();
 
   type menuItem = {
     title: string;
@@ -22,6 +24,7 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
   const handleLogout = () => {
     try {
       axios.post("/api/users/logout", {}, { withCredentials: true });
+      socket.disconnect()
       navigate("/sign-in");
       console.log("Succesfully logged out.");
     } catch (e) {

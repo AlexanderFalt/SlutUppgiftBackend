@@ -40,14 +40,13 @@ export default function SignIn() {
         setError("");
     
         try {
-          const response = await axios.post(
-            "/api/users/login",
-            { username, password },
-            { withCredentials: true }
-          );
-    
-          console.log("Login successful", response.data);
-          navigate("/home-page")
+            const response = await axios.post(
+                "/api/users/login",
+                { username, password },
+                { withCredentials: true }
+            );
+            console.log("Login successful", response.data);
+            navigate("/home-page")
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 404) {

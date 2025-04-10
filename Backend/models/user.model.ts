@@ -8,6 +8,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   roleRaise?: boolean;
   role: 'User' | 'Admin' | 'Owner';
+  refreshTokens: [String];
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -17,6 +18,7 @@ const userSchema = new mongoose.Schema<IUser>({
     password: { type: String, required: true },
     roleRaise: {type: Boolean},
     role: { type: String, enum: ['User', 'Admin', 'Owner'], default: 'User' },
+    refreshTokens: {type: [String]}
 });
 
 userSchema.pre('save', async function (next) {
