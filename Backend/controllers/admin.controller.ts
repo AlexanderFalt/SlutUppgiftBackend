@@ -30,6 +30,8 @@ export const getUsers = async(req: Request, res: Response) => {
             role: user.role
         }))
 
+
+
         logger.info("Succesfully got all the users")
         res.status(200).send(modifiedUsers)
     } catch(e) {
@@ -48,6 +50,7 @@ export const deleteUser = async(req: Request, res: Response) => {
         
         const { role } = req.user;
         const { id } = req.params;
+        const io = req.app.get('socketio');
 
         if (role !== "Admin") {
             logger.error("The user was not an Admin")
@@ -71,6 +74,10 @@ export const deleteUser = async(req: Request, res: Response) => {
             logger.error("The user was not found")
             res.status(404).json({ message: 'Room not found' });
         }
+
+        io.to(req.user._id).emit('removedUser', {
+            messageAdmin: `${req.user.username} removed the user ${userObject.username}`
+        })
 
         logger.info("The user was succesfully removed")
         res.status(200).send({message: `Deleted user: ${user}`})
@@ -115,6 +122,7 @@ export const updateRoleRaise = async(req: Request, res: Response) => {
       }
 
     const role = req.user.role;
+    const io = req.app.get('socketio');
 
     if (role !== "Admin") {
         logger.error("The user was not an Admin")
@@ -123,7 +131,17 @@ export const updateRoleRaise = async(req: Request, res: Response) => {
     }
 
     try {
-        await User.findOneAndUpdate({_id: id}, {roleRaise: true})
+        const newUser = await User.findOneAndUpdate({_id: id}, {roleRaise: true})
+            
+        if(!newUser) {
+            res.status(500).send({message: "The newUser was not found"})
+            return
+        }
+
+        io.to(req.user._id).emit('raiseUserRole', {
+            messageAdmin: `${req.user.username} raised the role of ${newUser.username ? newUser.username + '.' : "a user."}`
+        })
+
         logger.info("The role raise was succesfully updated")
         res.status(200).send()
     } catch(e) {

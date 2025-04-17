@@ -17,6 +17,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import axios from "axios";
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useSocket } from "../../Realtime/useSocket";
 
 export default function SignIn() {
     const [ showPassword, setShowPassword ] = useState(false)
@@ -25,6 +26,7 @@ export default function SignIn() {
     const [ error, setError ] = useState<string>(""); 
     const [ errorBool, setErrorBool ] = useState(false);
 
+    const socket = useSocket();
     const navigate = useNavigate();
 
     const handleSubmit = async (event: React.FormEvent) => {
@@ -46,7 +48,13 @@ export default function SignIn() {
                 { withCredentials: true }
             );
             console.log("Login successful", response.data);
-            navigate("/home-page")
+            if (response.status === 200 && response.data.userId) {
+                socket.emit('roomIDJoin', response.data.userId);
+                navigate("/home-page");
+            } else {
+                setError("Unexpected response from server.");
+                setErrorBool(true);
+            }
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 404) {

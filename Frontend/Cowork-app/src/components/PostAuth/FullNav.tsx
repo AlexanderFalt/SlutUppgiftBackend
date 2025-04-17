@@ -1,10 +1,10 @@
 import { forwardRef } from "react";
 import { Box, Paper, Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { useSocket } from "../../Realtime/useSocket";
 import axios from "axios";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
+import { socket } from "../../Realtime/socket";
 
 type Roles = {
   userRole: "Owner" | "User" | "Admin";
@@ -12,7 +12,6 @@ type Roles = {
 
 const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
   const navigate = useNavigate();
-  const socket = useSocket();
 
   type menuItem = {
     title: string;
@@ -21,12 +20,14 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
 
   let roleBasedItems: menuItem[] = [];
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
     try {
-      axios.post("/api/users/logout", {}, { withCredentials: true });
       socket.disconnect()
-      navigate("/sign-in");
-      console.log("Succesfully logged out.");
+      const response = await axios.post("/api/users/logout", {}, { withCredentials: true });
+      if(response.status === 200 ) {  
+        navigate("/sign-in");
+        console.log("Succesfully logged out.");
+      }
     } catch (e) {
       console.log(e);
     }
@@ -147,7 +148,6 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
     </Box>
   );
 });
-
 
 FullNav.displayName = "FullNav";
 

@@ -12,6 +12,9 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
         return;
     }
 
+    const client = req.app.get('redisclient');
+    const io = req.app.get('socketio');
+
     try{
         const {
             address, 
@@ -43,6 +46,16 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
 
         await newRoom.save()
 
+        try {
+            const updatedRooms = await Room.find().lean();
+            await client.set('roomCache', JSON.stringify(updatedRooms));
+        } catch(e) {
+            logger.error("There was an error when updating the cache for the rooms.")
+        }
+
+        io.to(req.user._id).emit('createdRoom', {
+            messageOwner: `${req.user.username} created a new room.`
+        })
         logger.error(`The room has been created and added to the database.`)
         res.status(201).json(newRoom)
     } catch(error) {
@@ -52,17 +65,25 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
 }
 
 export const getRooms = async(req: Request, res: Response) :  Promise<void> => {
-    
     if (!req.user) {
         logger.error(`There seems to be something wrong with the `)
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
 
+    const client = req.app.get('redisclient');
+
     try {
-        const rooms = await Room.find({}).lean();
-        logger.info(`The rooms are being sent back to the frontend.`)
-        res.status(200).json(rooms);
+        const data = JSON.parse(await client.get('roomCache'));
+        if(!data) {
+            const rooms = await Room.find({}).lean();
+            await client.set('roomCache', JSON.stringify(rooms));
+            logger.info(`The rooms are being sent back to the frontend from the DB.`)
+            res.status(200).json(rooms);
+            return    
+        }
+        logger.info('The rooms are being sent back to the frontend from the cache.')
+        res.status(200).json(data)
     } catch(error) {
         logger.error(`Something went wrong when trying to fetch the rooms.`)
         res.status(500).json({ error: 'An error occurred while fetching rooms.' });
@@ -70,15 +91,17 @@ export const getRooms = async(req: Request, res: Response) :  Promise<void> => {
 }
 
 export const removeRoom = async(req: Request, res: Response) : Promise<void> => {
-    
     if (!req.user) {
         logger.error(`The user could not be found.`)
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
 
+    const client = req.app.get('redisclient');
+
     try {
         const { id } = req.params;
+        const io = req.app.get('socketio');
         await Booking.deleteMany({roomId: id});
         const room = await Room.findByIdAndDelete(id);
         if (!room) {
@@ -86,6 +109,17 @@ export const removeRoom = async(req: Request, res: Response) : Promise<void> => 
             res.status(404).json({ message: 'Room not found' });
             return
         }
+
+        try {
+            const updatedRooms = await Room.find().lean();
+            await client.set('roomCache', JSON.stringify(updatedRooms));
+        } catch(e) {
+            logger.error("There was an error when updating the cache for the rooms.")
+        }
+
+        io.to(req.user._id).emit('removedRoom', {
+            messageOwner: `${req.user.username} removed the room with the ID of ${id}`
+        })
         logger.info(`The room was succesfully deleted.`)
         res.status(200).json({ message: 'Room deleted successfully' });
     } catch(error) {
@@ -101,10 +135,12 @@ export const updateRoom = async(req: Request, res: Response) : Promise<void> => 
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
-    
+
+    const client = req.app.get('redisclient');
 
     try {
         const {id} = req.params;
+        const io = req.app.get('socketio');
         const {
             address,
             name,
@@ -132,6 +168,17 @@ export const updateRoom = async(req: Request, res: Response) : Promise<void> => 
             res.status(404).json({ message: 'Room not found' });
             return;
         }
+
+        try {
+            const updatedRooms = await Room.find().lean();
+            await client.set('roomCache', JSON.stringify(updatedRooms));
+        } catch(e) {
+            logger.error("There was an error when updating the cache for the rooms.")
+        }
+
+        io.to(req.user._id).emit('updateRoom', {
+            messageOwner: `${req.user.username} updated the room with the ID of ${id}`
+        })
 
         logger.info(`The room was succesfully updated.`)
         res.status(204).send()

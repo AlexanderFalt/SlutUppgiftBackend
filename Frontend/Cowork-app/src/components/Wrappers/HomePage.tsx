@@ -7,32 +7,8 @@ import HomePageConsumer from "../PostAuth/HomePageConsumer.tsx";
 import HomePageOwner from "../PostAuth/HomePageOwner.tsx";
 import HomePageAdmin from '../PostAuth/HomePageAdmin.tsx';
 import NavBarAuth from "../PostAuth/NavBarAuth.tsx";
-import { useSocket } from '../../Realtime/useSocket.ts';
 
 export default function HomePage() {
-
-    const socket = useSocket();
-
-    useEffect(() => {
-      socket.on('connect', () => {
-        console.log('✅ Socket connected:', socket.id);
-      });
-  
-      socket.on('userLoggedIn', ({ userId, username }) => {
-        console.log(`✅ Received userLoggedIn event: ${username} & ${userId}`);
-      });
-  
-      socket.on('disconnect', () => {
-        console.log('❌ Socket disconnected');
-      });
-  
-      return () => {
-        socket.off('connect');
-        socket.off('disconnect');
-        socket.off('userLoggedIn');
-      };
-    }, [socket]);
-
     const [role, setRole] = useState<string | null>(null);
 
     useEffect(() => {

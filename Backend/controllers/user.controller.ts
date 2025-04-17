@@ -11,6 +11,7 @@ dotenv.config();
 const secretAccess = process.env.JWT_SECRET;
 const secretRefresh = process.env.REFRESH_TOKEN_SECRET;
 
+
 export const createUser = async(req: Request, res: Response) : Promise<void> => {
     try{
         const {
@@ -61,6 +62,13 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
 export const validateUser = async (req: Request, res: Response): Promise<void>  => {
     try {
         const { username, password } = req.body;
+        const io = req.app.get('socketio');
+        if (!io) {
+          console.error("Socket.io instance not found in app settings!");
+          res.status(500).json({ message: 'Server error' });
+          return;
+        }
+
         const user: IUser | null = await User.findOne({ username }).exec();
         if (!user) {
             logger.error("The user was not found.")
@@ -87,7 +95,7 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
             res.status(401).json({ message: 'Invalid credentials' });
             return 
         }
-
+        
         // Access
         const tokenAccess = generateAccessToken({
             userId: user._id,
@@ -112,15 +120,11 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
-        const io = req.app.get('socketio');
-        try {
-            io.emit('userLoggedIn', { userId: user._id, username: user.username });
-        } catch(e) {
-            console.log(`THERE WAS AN ERROR: \n${e}`)
-        }
-
         logger.info(`The login was successful for ${username}`)
-        res.status(200).json({ message: 'Login successful' });
+        res.status(200).json({ 
+            message: 'Login successful', 
+            userId: user._id
+        });
         return 
     } catch (error) {
         logger.error(`There was an unkown server error.`)
@@ -131,12 +135,19 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
 
 export const logout = async (req: Request, res: Response) : Promise<void> => {
     const { tokenRefresh } = req.cookies;
+    const io = req.app.get('socketio');
+
     if (tokenRefresh) {
         if (!secretRefresh) {
             logger.error(`Missing REFRESH_TOKEN_SECRET in environment.`);
             res.status(500).send({ message: "Internal server error." });
             return 
         }
+        
+        io.on('disconnect', (socket: Socket) => {
+            socket.disconnect()
+            console.log('Left room this is the current rooms:', Array.from(socket.rooms))
+        })
 
         try {
             const payload = jwt.verify( tokenRefresh, secretRefresh) as { userId: string };
@@ -156,7 +167,6 @@ export const logout = async (req: Request, res: Response) : Promise<void> => {
 };
 
 export const getUserRole = (req: Request, res: Response): void => {   
-
     try {
         if (!req.user) {
             logger.error(`Could not find the user.`)
