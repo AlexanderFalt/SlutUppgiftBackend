@@ -68,11 +68,12 @@ export default function SignUp() {
         console.log(payload)
 
         try {
-          const response = await axios.post(
-            `${API}/api/users/register`,
-            payload,
-            { withCredentials: true }
-          );
+            console.log(`Sending the request to: ${API}/api/users/register`)
+            const response = await axios.post(
+                `${API}/api/users/register`,
+                payload,
+                { withCredentials: true }
+            );
     
           console.log("Login successful", response.data);
           navigate("/sign-in")
