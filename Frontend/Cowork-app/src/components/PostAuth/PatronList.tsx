@@ -95,7 +95,8 @@ export default function PatronList({ eventId }: { eventId: string }) {
 }
 
 async function ReturnTheBookings(roomId: string): Promise<BookingAvatar[]> {
-  const response = await fetch(`/api/bookings/getBookings/${roomId}`);
+  const API = import.meta.env.VITE_API_URL;
+  const response = await fetch(`${API}/api/bookings/getBookings/${roomId}`);
   const data = await response.json();
   return data.bookings;
 }

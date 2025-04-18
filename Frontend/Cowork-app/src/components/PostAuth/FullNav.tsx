@@ -19,11 +19,12 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
   };
 
   let roleBasedItems: menuItem[] = [];
+  const API = import.meta.env.VITE_API_URL;
 
   const handleLogout = async() => {
     try {
       socket.disconnect()
-      const response = await axios.post("/api/users/logout", {}, { withCredentials: true });
+      const response = await axios.post(`${API}/api/users/logout`, {}, { withCredentials: true });
       if(response.status === 200 ) {  
         navigate("/sign-in");
         console.log("Succesfully logged out.");

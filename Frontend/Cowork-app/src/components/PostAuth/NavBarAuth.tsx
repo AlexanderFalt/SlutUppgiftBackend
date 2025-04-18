@@ -17,11 +17,12 @@ export default function NavBar() {
     const [showMenu, setShowMenu] = useState(true);
     const [role, setRole] = useState<"User" | "Owner" | "Admin">("User");
     const [username, setUsername] = useState<string | null>(null);
+    const API = import.meta.env.VITE_API_URL;
     
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get("/api/users/getRole", { withCredentials: true });
+                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
                 console.log(response.data.role + " " + response.data.username)
                 setRole(response.data.role);
                 setUsername(response.data.username);
@@ -30,7 +31,7 @@ export default function NavBar() {
             }
         };
         fetchUserRole();
-    }, []);
+    }, [API]);
 
     const showRole = () => {
         if (role === "Owner") {

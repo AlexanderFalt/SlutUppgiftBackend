@@ -9,19 +9,20 @@ import HomePageAdmin from '../PostAuth/HomePageAdmin.tsx';
 import NavBarAuth from "../PostAuth/NavBarAuth.tsx";
 
 export default function HomePage() {
+    const API = import.meta.env.VITE_API_URL;
     const [role, setRole] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get("/api/users/getRole", { withCredentials: true });
+                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
                 setRole(response.data.role);
             } catch (error) {
                 console.error("Failed to fetch user role", error);
             }
         };
             fetchUserRole();
-    }, []);
+    }, [API]);
 
     const showHomepage = () => {
         if (role === "User") {

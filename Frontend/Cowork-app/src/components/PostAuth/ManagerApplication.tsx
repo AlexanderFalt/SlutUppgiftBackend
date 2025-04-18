@@ -20,15 +20,17 @@ export default function ManagerApplication() {
         id: string,
     }
     const [users, setUsers] = useState<UserType[]>([]);
+    const API = import.meta.env.VITE_API_URL;
+
     const fetchUsers = useCallback(async() => {
         try { 
-            const response = await axios.get('/api/admin/role-raise', {withCredentials: true})
+            const response = await axios.get(`${API}/api/admin/role-raise`, {withCredentials: true})
             console.log(`This was the data that was returned: ${JSON.stringify(response.data)}`)
             setUsers(response.data)
         } catch(e) {
             console.log(e)
         }
-    }, [])
+    }, [API])
 
     const acceptApplication = async(id: string) => {
         try {

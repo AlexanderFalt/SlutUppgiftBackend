@@ -32,6 +32,7 @@ export default function SignUp() {
     const [ secondPassword, setSecondPassword ] = useState<string>();
 
     const navigate = useNavigate();
+    const API = import.meta.env.VITE_API_URL;
     
     const handleSubmit = async (event: React.FormEvent) => {
         if (!emailAddress) {
@@ -68,7 +69,7 @@ export default function SignUp() {
 
         try {
           const response = await axios.post(
-            "/api/users/register",
+            `${API}/api/users/register`,
             payload,
             { withCredentials: true }
           );

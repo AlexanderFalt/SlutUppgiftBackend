@@ -28,6 +28,8 @@ export default function SignIn() {
 
     const socket = useSocket();
     const navigate = useNavigate();
+    const API = import.meta.env.VITE_API_URL;
+    
 
     const handleSubmit = async (event: React.FormEvent) => {
         if (password === undefined) {
@@ -43,7 +45,7 @@ export default function SignIn() {
     
         try {
             const response = await axios.post(
-                "/api/users/login",
+                `${API}/api/users/login`,
                 { username, password },
                 { withCredentials: true }
             );

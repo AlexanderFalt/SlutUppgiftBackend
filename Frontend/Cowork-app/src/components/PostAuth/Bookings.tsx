@@ -47,10 +47,11 @@ export default function Bookings() {
     const [bookingInFocus, setBookingInFocus] = useState<{ [key: string]: boolean }>({});
     const [startTime, setStartTime] = useState<string>();
     const [endTime, setEndTime] = useState<string>();
+    const API = import.meta.env.VITE_API_URL;
         
     const fetchBookings = useCallback(async () => {
         try {
-            const response = await axios.get('/api/bookings', { withCredentials: true });
+            const response = await axios.get(`${API}/api/bookings`, { withCredentials: true });
             console.log(response.data)
             const formattedBookings = response.data.bookings.map((booking: bookingFormat) => ({
                 ...booking,
@@ -63,7 +64,7 @@ export default function Bookings() {
         } catch (error) {
             console.log(`Error that came up ${error}`);
         }
-    }, []);
+    }, [API]);
 
     const ChangeBookingFocus = (bookingId: string | undefined, cancel: boolean = false) => {
         if (!bookingId) return;
@@ -88,7 +89,7 @@ export default function Bookings() {
                 startTime,
                 selectDate
             }
-            await axios.put(`/api/bookings/${id}`, payload, { withCredentials: true });
+            await axios.put(`${API}/api/bookings/${id}`, payload, { withCredentials: true });
             fetchBookings();
         } catch(error) {
             console.error(error)
@@ -101,7 +102,7 @@ export default function Bookings() {
     
     const removeBooking = async (id: string) => {
         try {
-            await axios.delete(`/api/bookings/${id}`, { withCredentials: true });
+            await axios.delete(`${API}/api/bookings/${id}`, { withCredentials: true });
             fetchBookings();
         } catch (e) {
             console.error("Error deleting booking:", e);

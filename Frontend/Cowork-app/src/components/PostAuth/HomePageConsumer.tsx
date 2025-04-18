@@ -13,7 +13,7 @@ import {
     Grow,
     TextField,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PatronList from './PatronList.tsx';
 import Grid from '@mui/material/Grid2';
 import SearchIcon from '@mui/icons-material/Search';
@@ -42,19 +42,18 @@ export default function HomePage() {
     const today = dayjs().format("YYYY-MM-DD");
     const tomorrow = dayjs().add(1, "day").format("YYYY-MM-DD");
     const [selectDate, setSelectDate] = useState<string>(today);
+    const API = import.meta.env.VITE_API_URL;
 
-
-    const fetchRooms = () => {
-            console.log("Fetching Rooms")
-            axios.get('/api/room', { withCredentials: true })
-            .then((response) => {
-                setRooms(response.data);
-                setFullRooms(response.data);
-            })
-            .catch((error) => {
-                console.error("Error fetching rooms:", error);
-            });
-    }
+    const fetchRooms = useCallback(async () => {
+        console.log("Fetching Rooms")
+        try {
+            const response = await axios.get(`${API}/api/room`, { withCredentials: true })
+            setRooms(response.data)
+            setFullRooms(response.data)
+        } catch (error) {
+            console.error("Error fetching rooms:", error)
+        }
+    }, [API])
 
     const ChangeBookingFocus = (roomId: string | undefined, cancel: boolean = false) => {
         if (!roomId) return;
@@ -68,14 +67,14 @@ export default function HomePage() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get("/api/users/getRole", { withCredentials: true });
+                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
                 setUserId(response.data.userId)
             } catch (error) {
                 console.error("Failed to fetch user role", error);
             }
         };
         fetchUserRole();
-    }, []);
+    }, [API]);
 
     const bookRoom = (roomId: string | undefined) => {
         console.log(`Booking the room.`)
@@ -108,8 +107,7 @@ export default function HomePage() {
             date: selectDate
         }
 
-        axios.post('/api/bookings', payload, { withCredentials: true })
-            .then()
+        axios.post(`${API}/api/bookings`, payload, { withCredentials: true })
             .catch((error) => {
                 console.error("Error fetching rooms:", error);
             });
@@ -117,7 +115,7 @@ export default function HomePage() {
 
     useEffect(() => {
         fetchRooms();
-    }, []);
+    }, [fetchRooms]);
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value;

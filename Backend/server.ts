@@ -25,10 +25,7 @@ app.use('/api/users', usersRoutes)
 app.use('/api/bookings', bookingsRoutes)
 app.use('/api/admin', adminRoutes)
 
-const redisUrl = process.env.REDIS_URL;
-  if (!redisUrl) {
-    throw new Error('REDIS_URL must be set');
-  }
+
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/coworkify';
 const PORT = process.env.PORT || 8080;
 mongoose.connect(mongoUri)
@@ -48,13 +45,14 @@ const io = new SocketIOServer(httpServer, {
     }
 });
 
-const isTls = redisUrl.startsWith('rediss://');
 
+const isProd = process.env.NODE_ENV === 'production';
+
+const redisUrl = isProd
+  ? process.env.REDIS_TLS_URL!      
+  : process.env.REDIS_URL || 'redis://localhost:6379';
 const client = createClient({
   url: redisUrl,
-  socket: isTls
-    ? { tls: true, rejectUnauthorized: false }
-    : undefined,
 });
 
 client.on('error', err => console.log('Redis Client Error', err));
