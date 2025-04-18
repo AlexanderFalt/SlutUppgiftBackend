@@ -14,10 +14,13 @@ import bookingsRoutes from './routes/booking.routes.ts';
 import adminRoutes from './routes/admin.routes.ts';
 
 const app = express()
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173"
 app.use(cors({
-    origin: [ "http://localhost:5173", "https://coworkifytwo.vercel.app/" ],
+    origin: [ CLIENT_URL ],
     credentials: true
 }));
+app.options("*", cors({ origin: [CLIENT_URL], credentials: true }));
+
 app.use(express.json())
 app.use(cookieParser())
 app.use('/api/room', roomRoutes)
@@ -39,7 +42,7 @@ const httpServer = createServer(app); // Gör så att vi kan köra både HTTP re
 
 const io = new SocketIOServer(httpServer, {
     cors: {
-        origin: 'http://localhost:5173',
+        origin: CLIENT_URL,
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -51,11 +54,16 @@ const isProd = process.env.NODE_ENV === 'production';
 const redisUrl = isProd
   ? process.env.REDIS_TLS_URL!      
   : process.env.REDIS_URL || 'redis://localhost:6379';
-const client = createClient({
-  url: redisUrl,
-});
 
-client.on('error', err => console.log('Redis Client Error', err));
+  const client = createClient({
+    url: redisUrl,
+    socket: {
+      tls: process.env.NODE_ENV === "production",
+      rejectUnauthorized: false,
+    },
+  });
+
+  client.on('error', err => console.log('Redis Client Error', err));
 client.connect()
   .then(() => console.log('Redis client connected'))
   .catch((err) => console.error('Redis connection error', err));
