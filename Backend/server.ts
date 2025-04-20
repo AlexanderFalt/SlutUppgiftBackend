@@ -49,19 +49,16 @@ const io = new SocketIOServer(httpServer, {
 });
 
 
-const isProd = process.env.NODE_ENV === 'production';
+const rawUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const useTls = rawUrl.startsWith('rediss://');
 
-const redisUrl = isProd
-  ? process.env.REDIS_TLS_URL!      
-  : process.env.REDIS_URL || 'redis://localhost:6379';
-
-  const client = createClient({
-    url: redisUrl,
-    socket: {
-      tls: process.env.NODE_ENV === "production",
-      rejectUnauthorized: false,
-    },
-  });
+const client = createClient({
+  url: rawUrl,
+  socket: {
+    tls: useTls,              
+    rejectUnauthorized: false 
+  },
+});
 
   client.on('error', err => console.log('Redis Client Error', err));
 client.connect()

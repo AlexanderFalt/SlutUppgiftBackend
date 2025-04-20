@@ -95,6 +95,12 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
             res.status(401).json({ message: 'Invalid credentials' });
             return 
         }
+
+        console.log("🔥 NODE_ENV:", process.env.NODE_ENV);
+        console.log("🔥 cookie opts:", {
+            secure:      process.env.NODE_ENV === "production",
+            sameSite:    process.env.NODE_ENV === "production" ? "none" : "lax",
+        });
         
         // Access
         const tokenAccess = generateAccessToken({
@@ -106,7 +112,8 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', 
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            maxAge: 15 * 60 * 1000
+            maxAge: 15 * 60 * 1000,
+            path: '/'
         });
 
         //Refresh
@@ -117,7 +124,8 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', 
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/'
         })
 
         logger.info(`The login was successful for ${username}`)
