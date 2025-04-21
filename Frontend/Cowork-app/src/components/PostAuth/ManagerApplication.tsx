@@ -34,7 +34,7 @@ export default function ManagerApplication() {
 
     const acceptApplication = async(id: string) => {
         try {
-            await axios.put(`/api/admin/role-raise/${id}`, {withCredentials: true})
+            await axios.put(`${API}/api/admin/role-raise/${id}`, {withCredentials: true})
             fetchUsers();
         } catch(e) {
             console.log(e)
