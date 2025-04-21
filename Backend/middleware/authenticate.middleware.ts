@@ -30,7 +30,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             _id: decoded.userId,
             username: decoded.username,
             role: decoded.role,
-        } as IUser;
+        } as IUser; // Byt till IJwtPayload kanske
 
         logger.info("The token was succesfully authenticated")
 

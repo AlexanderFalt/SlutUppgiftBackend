@@ -115,7 +115,7 @@ export default function HomePageAdmin() {
         }
         console.log(roomData)
         setRoomFieldVisablity(!roomFieldVisablity)
-        axios.post(`${API}/api/room`, roomData)
+        axios.post(`${API}/api/room`, roomData, { withCredentials: true })
             .then((response) => {
                 console.log(response)
                 fetchRooms()
