@@ -64,11 +64,16 @@ export default function HomePage() {
     const API = import.meta.env.VITE_API_URL;
     
     const fetchRooms = useCallback(() => {
+        console.log(`Calling: ${API}/api/room`)
         axios.get(`${API}/api/room`, { withCredentials: true })
             .then((response) => {
                 console.log(response.data);
+                response.data.map((thing: AvailableRoomsObject) => {
+                    console.log(thing.name)
+                })
                 const filteredRooms = response.data.filter((room: AvailableRoomsObject) => room.name === username);
                 setRooms(filteredRooms);
+                console.log(filteredRooms)
                 setFullRooms(filteredRooms);
             })
             .catch((error) => {
@@ -80,7 +85,7 @@ export default function HomePage() {
         const fetchUserRole = async () => {
             try {
                 const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
-                console.log(response.data.roleRaise + " " + response.data.username);
+                console.log(response.data.roleRaise + " " + response.data.username + " " + response.data.username);
                 setRoleRaise(response.data.roleRaise);
                 setUsername(response.data.username);
             } catch (error) {

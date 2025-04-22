@@ -95,12 +95,6 @@ export const validateUser = async (req: Request, res: Response): Promise<void>  
             res.status(401).json({ message: 'Invalid credentials' });
             return 
         }
-
-        console.log("🔥 NODE_ENV:", process.env.NODE_ENV);
-        console.log("🔥 cookie opts:", {
-            secure:      process.env.NODE_ENV === "production",
-            sameSite:    process.env.NODE_ENV === "production" ? "none" : "lax",
-        });
         
         // Access
         const tokenAccess = generateAccessToken({
@@ -174,7 +168,7 @@ export const logout = async (req: Request, res: Response) : Promise<void> => {
     res.status(200).json({ message: "Logged out successfully" });
 };
 
-export const getUserRole = (req: Request, res: Response): void => {   
+export const getUserRole = async(req: Request, res: Response): Promise<void> => {   
     try {
         if (!req.user) {
             logger.error(`Could not find the user.`)
@@ -184,7 +178,12 @@ export const getUserRole = (req: Request, res: Response): void => {
 
         if (req.user.role === "Owner") {
             logger.info(`Sending back the information required in frontend for an owner.`)
-            res.status(200).json({ role: req.user.role, username: req.user.username, roleRaise: req.user.roleRaise, userId: req.user._id })
+            const user = await User.findById(req.user._id).lean();
+            if(!user) {
+                res.status(404).json({message: "Could not find the user for Owner."})
+                return
+            }
+            res.status(200).json({ role: req.user.role, username: req.user.username, roleRaise: user.roleRaise, userId: req.user._id })
             return
         }
 
