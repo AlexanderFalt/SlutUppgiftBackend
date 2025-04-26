@@ -195,6 +195,14 @@ export default function Bookings() {
                                             }}
                                             slotProps={{
                                                 input: { style: { textAlign: "center", marginLeft: "4px" } },
+                                                inputLabel: {
+                                                    shrink: true,
+                                                  },
+                                                  htmlInput: {
+                                                      min: '00:00',
+                                                      max: '24:00',
+                                                      step: 60,
+                                                  }
                                             }}
                                         />
                                         <TextField
@@ -219,6 +227,14 @@ export default function Bookings() {
                                             }}
                                             slotProps={{
                                                 input: { style: { textAlign: "center", marginLeft: "4px" } },
+                                                inputLabel: {
+                                                    shrink: true,
+                                                  },
+                                                  htmlInput: {
+                                                      min: '00:00',
+                                                      max: '24:00',
+                                                      step: 60,
+                                                  }
                                             }}
                                         />
                                     </Box>

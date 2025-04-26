@@ -20,4 +20,4 @@ export const generateAccessToken = (payload: IJwtPayload) => {
 export const generateRefreshToken = (userId: IJwtPayload["userId"]) => {
     logger.info("Creating a refresh token")
     return jwt.sign( { userId }, secretRefresh, { expiresIn: '7d' });
-}  
+}

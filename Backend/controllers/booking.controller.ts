@@ -1,15 +1,16 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import mongoose from 'mongoose';
 import Booking from '../models/booking.model.ts';
 import User, {IUser} from '../models/user.model.ts';
 import Room, {IRoomModel} from '../models/room.model.ts';
 import dayjs from 'dayjs'
 import { logger } from '../utils/logger.utils.ts';
+import { HTTP_STATUS } from "../constants/httpStatusCodes.ts";
 
 export const createBooking = async(req: Request, res: Response) => {
     if (!req.user) {
         logger.error(`Could not find the user.`)
-        res.status(401).json({ message: "Unauthorized" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
         return;
     }
     const client = req.app.get('redisclient');    
@@ -37,7 +38,7 @@ export const createBooking = async(req: Request, res: Response) => {
     })
     if (existingBooking) {
         logger.error(`This booking already exsists.`)
-        res.status(400).json({ message: 'Booking already exists' });
+        res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Booking already exists' });
         return;
     }
 
@@ -45,19 +46,19 @@ export const createBooking = async(req: Request, res: Response) => {
         const user = await User.findById(userId);
         if (!user) {
             logger.error("There was an issue with the websocket when handeling the user.")
-            res.status(500).json({message: 'Could not find the user.'})
+            res.status(HTTP_STATUS.NOT_FOUND).json({message: 'Could not find the user.'})
             return
         }
         const room = await Room.findById(roomId);
         if (!room) {
             logger.error("There was an issue with the websocket when handeling the room.")
-            res.status(500).json({message: 'Could not find the room.'})
+            res.status(HTTP_STATUS.NOT_FOUND).json({message: 'Could not find the room.'})
             return
         }
         const owner = await User.findOne({username: room.name})
         if (!owner) {
             logger.error("There was an issue with the websocket when handeling the owner.")
-            res.status(500).json({message: 'Could not find the owner.'})
+            res.status(HTTP_STATUS.NOT_FOUND).json({message: 'Could not find the owner.'})
             return
         }
 
@@ -69,11 +70,11 @@ export const createBooking = async(req: Request, res: Response) => {
             await client.del(`booking:admin:${req.user._id}`);
         } else {
             logger.error('There was an issue with deleting the cache.')
-            res.status(500).send({message: "There was an issue when sending back the data."})
+            res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({message: "There was an issue when sending back the data."})
         }
 
         console.log(`This was the Owner ID: ${owner._id} and this was the User ID: ${userId}`)
-        io.in(owner._id).emit('sendDataBooking', {
+        io.in(`${owner._id}`).emit('sendDataBooking', {
             messageOwner: `OWNER USER MESSAGE: ${user.username} created a booking at ${owner.username} - ${room.address}`
         });
 
@@ -89,12 +90,12 @@ export const createBooking = async(req: Request, res: Response) => {
         logger.info(`Adding the new booking to the database.`)
         await newBooking.save();
     } catch (error : any) {
-        if (error.code === 11000) {
+        if (error.code === 11000) { // MongoDBs Internal error code för om en duplicat finns.
             logger.info(`There was an duplicate of data.`)
-            res.status(400).json({ message: 'Duplicate data found.' });
+            res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Duplicate data found.' });
         } else {
             logger.info(`There was an error on the server side when creating the booking.`)
-            res.status(500).json({ message: 'Server error' });
+            res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
         }
     }
 }
@@ -103,7 +104,7 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
     try {
         if (!req.user) {
             logger.error(`Could not find the user.`)
-            res.status(401).json({ message: "Unauthorized" });
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
             return;
         }
         
@@ -125,14 +126,14 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
             cacheKey = `booking:admin:${_id}`
         } else {
             logger.error('There was an error when getting the user role for the cache key.')
-            res.status(500).send({message: 'Invalid user role.'})
+            res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({message: 'Invalid user role.'})
             return
         }
 
         const cachedData = await client.get(cacheKey);
         if (cachedData) {
             logger.info(`Bookings returned from cache (key: ${cacheKey}).`);
-            res.json(JSON.parse(cachedData));
+            res.status(HTTP_STATUS.OK).json(JSON.parse(cachedData));
             return
         }
 
@@ -144,7 +145,7 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
             const ownedRooms = await Room.find({ name: username }).select("_id");
             if (ownedRooms.length === 0) {
                 logger.info(`There were no bookings found sending back an empty array.`)
-                res.json({ bookings: [] });
+                res.status(HTTP_STATUS.NO_CONTENT).json({ bookings: [] });
                 return;
             }
             const roomIds = ownedRooms.map(room => room._id);
@@ -153,7 +154,7 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
             query = {}
         } else {
             logger.error(`The users role was not found.`)
-            res.status(403).json({ message: "Forbidden" });
+            res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Forbidden" });
             return;
         }
 
@@ -189,14 +190,14 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
         res.json({ bookings: bookingsWithDetails });
     } catch (error) {
         logger.error(`Failed to fetch the bookings.`)
-        res.status(500).json({ message: "Failed to fetch bookings" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch bookings" });
     }
 };
 
 export const updateBooking = async(req: Request, res: Response) => {
     if (!req.user) {
         logger.error(`Could not find the user.`)
-        res.status(401).json({ message: "Unauthorized" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
         return;
     }
 
@@ -225,14 +226,14 @@ export const updateBooking = async(req: Request, res: Response) => {
             await client.del(`booking:admin:${req.user._id}`);
         } else {
             logger.error('There was an issue with deleting the cache.')
-            res.status(500).send({message: "There was an issue when sending back the data."})
+            res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({message: "There was an issue when sending back the data."})
         }
 
         io.to(req.user._id).emit('sendBookingUpdate', {
             messageUser: `NORMAL USER MESSAGE: ${req.user.username} updated the booking with the ID of ${id}`,
         })
         logger.info(`The booking has been updated`)
-        res.status(204).send()
+        res.status(HTTP_STATUS.NO_CONTENT).send()
     } catch(error) {
         logger.error(`There was an error during when updating the booking`)
     }
@@ -257,13 +258,13 @@ export const removeBooking = async (req: Request, res: Response): Promise<void> 
         const booking = await Booking.findById(id);
         if (!booking) {
             logger.error("Could not find the booking in the Database")
-            res.status(404).json({ message: "Booking not found" });
+            res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Booking not found" });
             return;
         }
 
         if (userRole === 'User' && booking.userId.toString() !== userId) {
             logger.error("The user has not yet been accepted by the Admins.")
-            res.status(403).json({ message: "Unauthorized" });
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
             return;
         }
 
@@ -274,7 +275,7 @@ export const removeBooking = async (req: Request, res: Response): Promise<void> 
 
             if (!isOwnerOfRoom) {
                 logger.error("The user does not own that room.")
-                res.status(403).json({ message: "Unauthorized" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
                 return;
             }
         }
@@ -288,7 +289,7 @@ export const removeBooking = async (req: Request, res: Response): Promise<void> 
             await client.del(`booking:admin:${req.user._id}`);
         } else {
             logger.error('There was an issue with deleting the cache.')
-            res.status(500).send({message: "There was an issue when sending back the data."})
+            res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({message: "There was an issue when sending back the data."})
         }
 
         io.to(userId).emit('sendBookingDelete', {
@@ -296,10 +297,10 @@ export const removeBooking = async (req: Request, res: Response): Promise<void> 
         })
 
         logger.info("Succesfully removed the room.")
-        res.status(204).send();
+        res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
         logger.error("There was an error when removing the booking")
-        res.status(500).json({ message: "Server error" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
     }
 };
 
@@ -308,7 +309,7 @@ export const getAllRoomBookings = async(req: Request, res: Response ) : Promise<
 
     if (!req.user) {
         logger.error("Could not find the user")
-        res.status(401).json({ message: "Unauthorized" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
         return;
     }
 
@@ -325,9 +326,9 @@ export const getAllRoomBookings = async(req: Request, res: Response ) : Promise<
         );
 
         logger.info("Succesfully sent back all the bookings for the Avatars")
-        res.status(200).json({ bookings: bookingAvatarFormat })
+        res.status(HTTP_STATUS.OK).json({ bookings: bookingAvatarFormat })
     } catch(err) {
         logger.error("There was an error when getting all the bookings.")
-        res.status(500).json({ message: "Server Error: When getting all the bookings" })
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Server Error: When getting all the bookings" })
     }
 }

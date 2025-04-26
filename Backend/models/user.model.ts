@@ -8,7 +8,6 @@ export interface IUser extends mongoose.Document {
   password: string;
   roleRaise?: boolean;
   role: 'User' | 'Admin' | 'Owner';
-  refreshTokens: [String];
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -18,13 +17,12 @@ const userSchema = new mongoose.Schema<IUser>({
     password: { type: String, required: true },
     roleRaise: {type: Boolean},
     role: { type: String, enum: ['User', 'Admin', 'Owner'], default: 'User' },
-    refreshTokens: {type: [String]}
 });
 
 userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
+    if (!this.isModified('password')) return next(); // Om lösenordet har redan hashat fortsätt till nästa function.
+    this.password = await bcrypt.hash(this.password, 10); // Hashar lösenordet med 10 saltnings rundor. 
     next();
 });
 
-  export default mongoose.model<IUser>('User', userSchema);
+export default mongoose.model<IUser>('User', userSchema);

@@ -231,6 +231,11 @@ export default function HomePage() {
                                                 }}
                                                 slotProps={{
                                                     input: { style: { textAlign: "center", marginLeft: "4px" } },
+                                                    htmlInput: {
+                                                        min: '00:00',
+                                                        max: '24:00',
+                                                        step: 60
+                                                    }
                                                 }}
                                             />
                                             <TextField
@@ -255,6 +260,11 @@ export default function HomePage() {
                                                 }}
                                                 slotProps={{
                                                     input: { style: { textAlign: "center", marginLeft: "4px" } },
+                                                    htmlInput: {
+                                                        min: '00:00',
+                                                        max: '24:00',
+                                                        step: 60,
+                                                    }
                                                 }}
                                             />
                                         </Box>

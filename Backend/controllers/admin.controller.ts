@@ -3,12 +3,13 @@ import User from '../models/user.model.ts';
 import Room from '../models/room.model.ts';
 import Booking from "../models/booking.model.ts";
 import { logger } from '../utils/logger.utils.ts'
+import { HTTP_STATUS } from "../constants/httpStatusCodes.ts";
 
 export const getUsers = async(req: Request, res: Response) => {
     try {
         if (!req.user) {
             logger.error("The user was not found")
-            res.status(401).json({ message: "Unauthorized" });
+            res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Unauthorized" });
             return;
         }
         
@@ -16,7 +17,7 @@ export const getUsers = async(req: Request, res: Response) => {
 
         if (role !== "Admin") {
             logger.error("The user was not an Admin")
-            res.status(403).json({ message: "Forbidden" });
+            res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Forbidden" });
             return;
         }
 
@@ -33,10 +34,10 @@ export const getUsers = async(req: Request, res: Response) => {
 
 
         logger.info("Succesfully got all the users")
-        res.status(200).send(modifiedUsers)
+        res.status(HTTP_STATUS.OK).send(modifiedUsers)
     } catch(e) {
         logger.error("There was an error when getting the users")
-        res.status(500).send()
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send()
     }
 }
 
@@ -44,7 +45,7 @@ export const deleteUser = async(req: Request, res: Response) => {
     try {
         if (!req.user) {
             logger.error("The user was not found")
-            res.status(401).json({ message: "Unauthorized" });
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
             return;
         }
         
@@ -54,7 +55,7 @@ export const deleteUser = async(req: Request, res: Response) => {
 
         if (role !== "Admin") {
             logger.error("The user was not an Admin")
-            res.status(403).json({ message: "Forbidden" });
+            res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Forbidden" });
             return;
         }
 
@@ -65,14 +66,14 @@ export const deleteUser = async(req: Request, res: Response) => {
             await Booking.deleteMany({userId: userObject._id});
             await Room.deleteMany({name: userObject.username});
         } else {
-            res.status(403).send()
+            res.status(HTTP_STATUS.FORBIDDEN).send()
             return
         }
 
         const user = await User.findByIdAndDelete(id);
         if (!user) {
             logger.error("The user was not found")
-            res.status(404).json({ message: 'Room not found' });
+            res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Room not found' });
         }
 
         io.to(req.user._id).emit('removedUser', {
@@ -80,17 +81,17 @@ export const deleteUser = async(req: Request, res: Response) => {
         })
 
         logger.info("The user was succesfully removed")
-        res.status(200).send({message: `Deleted user: ${user}`})
+        res.status(HTTP_STATUS.OK).send({message: `Deleted user: ${user}`})
     } catch(e) {
         logger.error("There was an error when trying to remove the user")
-        res.status(500).send()
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send()
     }
 }
 
 export const getRoleRaise = async(req: Request, res: Response) => {
     if (!req.user) {
         logger.error("Could not find the user")
-        res.status(401).json({ message: "Unauthorized" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
         return;
     }
     
@@ -103,10 +104,10 @@ export const getRoleRaise = async(req: Request, res: Response) => {
             id: user._id
         }))
         logger.info("Succesfully got all the applicants")
-        res.status(200).send(modifiedUsers);
+        res.status(HTTP_STATUS.OK).send(modifiedUsers);
     } catch(e) {
         logger.error("There was an error when trying to find the applicants")
-        res.status(500).send()
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send()
     }
 }
 
@@ -117,7 +118,7 @@ export const updateRoleRaise = async(req: Request, res: Response) => {
 
     if (!req.user) {
          logger.error("Could not find the user")
-         res.status(401).send({ error: 'Unauthorized' });
+         res.status(HTTP_STATUS.UNAUTHORIZED).send({ error: 'Unauthorized' });
          return;
       }
 
@@ -126,7 +127,7 @@ export const updateRoleRaise = async(req: Request, res: Response) => {
 
     if (role !== "Admin") {
         logger.error("The user was not an Admin")
-        res.status(403).send();
+        res.status(HTTP_STATUS.FORBIDDEN).send();
         return
     }
 
@@ -134,7 +135,7 @@ export const updateRoleRaise = async(req: Request, res: Response) => {
         const newUser = await User.findOneAndUpdate({_id: id}, {roleRaise: true})
             
         if(!newUser) {
-            res.status(500).send({message: "The newUser was not found"})
+            res.status(HTTP_STATUS.NOT_FOUND).send({message: "The newUser was not found"})
             return
         }
 
@@ -143,9 +144,9 @@ export const updateRoleRaise = async(req: Request, res: Response) => {
         })
 
         logger.info("The role raise was succesfully updated")
-        res.status(200).send()
+        res.status(HTTP_STATUS.OK).send()
     } catch(e) {
         logger.error("There was an error when trying to raise the role.")
-        res.status(500).send({ error: "Failed to update roleRaise" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({ error: "Failed to update roleRaise" });
     }
 }

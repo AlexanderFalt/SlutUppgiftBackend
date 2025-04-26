@@ -14,15 +14,15 @@ import bookingsRoutes from './routes/booking.routes.ts';
 import adminRoutes from './routes/admin.routes.ts';
 
 const app = express()
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173"
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173" // CLIENT_URL är en Enviorment variabel som finns i herkou.
 app.use(cors({
     origin: [ CLIENT_URL ],
     credentials: true
 }));
-app.options("*", cors({ origin: [CLIENT_URL], credentials: true }));
+app.options("*", cors({ origin: [CLIENT_URL], credentials: true })); // På alla options request så är dom okej om deras cross-origin är från vår client och har credentials.
 
 app.use(express.json())
-app.use(cookieParser())
+app.use(cookieParser()) // Gör så att vi kan köra req.cookies
 app.use('/api/room', roomRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/bookings', bookingsRoutes)
@@ -30,7 +30,7 @@ app.use('/api/admin', adminRoutes)
 
 
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/coworkify';
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080; // PORT är en inbyggd Enviorment variabel i heroku so tar en leddig port.
 mongoose.connect(mongoUri)
     .then(() => {
         console.log('Connected to database')
@@ -60,7 +60,7 @@ const client = createClient({
   },
 });
 
-  client.on('error', err => console.log('Redis Client Error', err));
+client.on('error', err => console.log('Redis Client Error', err));
 client.connect()
   .then(() => console.log('Redis client connected'))
   .catch((err) => console.error('Redis connection error', err));

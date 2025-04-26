@@ -290,7 +290,15 @@ export default function HomePageAdmin() {
                                         <Box  sx={{width: "100%", height: "85.5%"}}>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
                                                 <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Opening time:</Typography>
-                                                <TextField variant="standard" value={roomData.roomOpens} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
+                                                <TextField variant="standard" value={roomData.roomOpens} type="time" sx={{width: "30%"}} slotProps={{htmlInput: {
+                                                        min: '00:00',
+                                                        max: '24:00',
+                                                        step: 60,
+                                                        style: {
+                                                            marginLeft: '4px',
+                                                            fontSize: 'clamp(0.95rem, 2.5vw, 1rem)',
+                                                        },
+                                                    }, }}
                                                     onChange={(e) => {
                                                         setRoomData((prev) => ({
                                                         ...prev, 
@@ -300,7 +308,15 @@ export default function HomePageAdmin() {
                                             </Box>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
                                                 <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Closing time:</Typography>
-                                                <TextField variant="standard" value={roomData.roomCloses} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
+                                                <TextField variant="standard" value={roomData.roomCloses} type="time" sx={{width: "30%"}} slotProps={{htmlInput: {
+                                                        min: '00:00',
+                                                        max: '24:00',
+                                                        step: 60,
+                                                        style: {
+                                                            marginLeft: '4px',
+                                                            fontSize: 'clamp(0.95rem, 2.5vw, 1rem)',
+                                                        },
+                                                    }, }}
                                                     onChange={(e) =>
                                                         setRoomData((prev) => ({
                                                         ...prev,
@@ -430,6 +446,11 @@ export default function HomePageAdmin() {
                                                             inputLabel: {
                                                               shrink: true,
                                                             },
+                                                            htmlInput: {
+                                                                min: '00:00',
+                                                                max: '24:00',
+                                                                step: 60,
+                                                            }
                                                         }}
                                                         variant="outlined"
                                                         label="Opening time"
@@ -489,6 +510,11 @@ export default function HomePageAdmin() {
                                                             inputLabel: {
                                                               shrink: true,
                                                             },
+                                                            htmlInput: {
+                                                                min: '00:00',
+                                                                max: '24:00',
+                                                                step: 60,
+                                                            }
                                                         }}
                                                         variant="outlined"
                                                         label="Closing time"
