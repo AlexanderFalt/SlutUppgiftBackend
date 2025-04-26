@@ -182,7 +182,7 @@ export const updateRoom = async(req: Request, res: Response) : Promise<void> => 
         })
 
         logger.info(`The room was succesfully updated.`)
-        res.status(HTTP_STATUS.NO_CONTENT)
+        res.status(HTTP_STATUS.NO_CONTENT).send()
     } catch(error) {
         logger.error(`There was an updated error on the server side.`)
         res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Update Error'})

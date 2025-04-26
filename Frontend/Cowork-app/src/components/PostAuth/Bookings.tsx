@@ -59,7 +59,7 @@ export default function Bookings() {
                 endTime: new Date(booking.endTime),
             }));
             
-            console.log(formattedBookings)
+            console.log("THIS WAS THE FORMATED BOOKING: \n ", formattedBookings)
             setBookings(formattedBookings);
         } catch (error) {
             console.log(`Error that came up ${error}`);
