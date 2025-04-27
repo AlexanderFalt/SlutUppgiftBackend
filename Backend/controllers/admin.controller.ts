@@ -6,6 +6,7 @@ import { logger } from '../utils/logger.utils.ts'
 import { HTTP_STATUS } from "../constants/httpStatusCodes.ts";
 
 export const getUsers = async(req: Request, res: Response) => {
+    /* Hämtar alla användare */
     try {
         if (!req.user) {
             logger.error("The user was not found")
@@ -42,6 +43,7 @@ export const getUsers = async(req: Request, res: Response) => {
 }
 
 export const deleteUser = async(req: Request, res: Response) => {
+    /* Raderar en användare */
     try {
         if (!req.user) {
             logger.error("The user was not found")
@@ -59,6 +61,7 @@ export const deleteUser = async(req: Request, res: Response) => {
             return;
         }
 
+        // Tar bort alla delar som är beroende av den användaren.
         const userObject = await User.findById(id);
         if ( userObject?.role === "User" ) {
             await Booking.deleteMany({userId: userObject._id});
@@ -89,6 +92,7 @@ export const deleteUser = async(req: Request, res: Response) => {
 }
 
 export const getRoleRaise = async(req: Request, res: Response) => {
+    /* Hämta ägare (Owner) om dom letar efter godkännande. */
     if (!req.user) {
         logger.error("Could not find the user")
         res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
@@ -112,6 +116,7 @@ export const getRoleRaise = async(req: Request, res: Response) => {
 }
 
 export const updateRoleRaise = async(req: Request, res: Response) => {
+    /* Godkänner ägare (Owner) applikationer. */
     const {
         id
     } = req.params;

@@ -57,6 +57,7 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
         io.to(req.user._id).emit('createdRoom', {
             messageOwner: `${req.user.username} created a new room.`
         })
+        
         logger.error(`The room has been created and added to the database.`)
         res.status(HTTP_STATUS.CREATED).json(newRoom)
     } catch(error) {

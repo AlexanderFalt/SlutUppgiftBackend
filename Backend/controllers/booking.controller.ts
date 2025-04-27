@@ -15,32 +15,37 @@ export const createBooking = async(req: Request, res: Response) => {
     }
     const client = req.app.get('redisclient');    
     const io = req.app.get('socketio');
+
     const {
         roomId: roomId,
         userId: userId,
-        startTime: startTime,
-        endTime: endTime,
-        date: date,
+        startTime: startTime, // Är XX:XX
+        endTime: endTime, // Är XX:XX
+        date: date,  // XXXX-XX-xx
     } = req.body;
-    const modifiedStartDate = `${date}T${startTime}:00.000`
-    const modifiedEndDate = `${date}T${endTime}:00.000`
-    const newBooking = new Booking({
-        roomId,
-        userId,
-        startTime: modifiedStartDate,
-        endTime: modifiedEndDate,
-    });
+    
+    const modifiedStartDate = `${date}T${startTime}:00.000` // Ändrar till format som passar bättre till Date
+    const modifiedEndDate = `${date}T${endTime}:00.000` // Ändrar till format som passar bättre till Date
+    
     const existingBooking = await Booking.findOne({
         roomId,
         userId,
         startTime: modifiedStartDate,
         endTime: modifiedEndDate
     })
+
     if (existingBooking) {
         logger.error(`This booking already exsists.`)
         res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Booking already exists' });
         return;
     }
+
+    const newBooking = new Booking({
+        roomId,
+        userId,
+        startTime: modifiedStartDate,
+        endTime: modifiedEndDate,
+    });
 
     try {
         const user = await User.findById(userId);
@@ -62,6 +67,7 @@ export const createBooking = async(req: Request, res: Response) => {
             return
         }
 
+        // Städar cache för att senare updatera cache i getBookings.
         if (req.user.role === 'User') {
             await client.del(`booking:user:${req.user._id}`);
         } else if (req.user.role === 'Owner') {
@@ -71,9 +77,9 @@ export const createBooking = async(req: Request, res: Response) => {
         } else {
             logger.error('There was an issue with deleting the cache.')
             res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({message: "There was an issue when sending back the data."})
+            return
         }
 
-        console.log(`This was the Owner ID: ${owner._id} and this was the User ID: ${userId}`)
         io.in(`${owner._id}`).emit('sendDataBooking', {
             messageOwner: `OWNER USER MESSAGE: ${user.username} created a booking at ${owner.username} - ${room.address}`
         });
@@ -81,7 +87,7 @@ export const createBooking = async(req: Request, res: Response) => {
         io.in(userId).emit('sendDataBooking', {
             messageUser: `NORMAL USER MESSAGE: ${user.username} created a booking at ${owner.username} - ${room.address}`,
         });
-        console.log(`Completed the emits.`)
+
     } catch (e) {
         console.error(`THERE WAS AN ERROR: \n${e}`);
     }
@@ -89,13 +95,16 @@ export const createBooking = async(req: Request, res: Response) => {
     try {
         logger.info(`Adding the new booking to the database.`)
         await newBooking.save();
+        res.status(HTTP_STATUS.CREATED).send()
     } catch (error : any) {
-        if (error.code === 11000) { // MongoDBs Internal error code för om en duplicat finns.
+        if (error.code === 11000) { // MongoDBs Internal fel kod för om en duplicat finns.
             logger.info(`There was an duplicate of data.`)
             res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Duplicate data found.' });
+            return
         } else {
             logger.info(`There was an error on the server side when creating the booking.`)
             res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+            return
         }
     }
 }
@@ -112,8 +121,19 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
         let query: any = {};
         const client = req.app.get('redisclient')
 
-        const result = await Booking.deleteMany({
+        /* Testning */
+        const cutoff = dayjs().subtract(2, 'day').startOf('day').toDate();
+        console.log('Deleting for user:', req.user._id, 'before', cutoff);
+        console.log(
+        'Would delete these documents:',
+        await Booking.find({
             userId: req.user._id,
+            endTime: { $lt: cutoff }
+        })
+        );
+
+        const result = await Booking.deleteMany({
+            userId: req.body._id,
             endTime: { $lt: dayjs().subtract(2, 'day').startOf('day').toDate() }
         });
 
@@ -137,10 +157,10 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
             return
         }
 
+        // Bestämer query som söks efter i booking.
         if (role === "User") {
             query = { userId: _id };
-        } 
-
+        }  
         else if (role === "Owner") {
             const ownedRooms = await Room.find({ name: username }).select("_id");
             if (ownedRooms.length === 0) {
@@ -158,7 +178,6 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        
         const bookings = await Booking.find(query).lean();
 
         if (bookings.length === 0) {
@@ -167,7 +186,7 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-
+        // Gör så att bokningen skickas tillbaka tillsamans med information om rummet de har bokat.
         const roomIds = bookings.map(booking => booking.roomId);
         const rooms = await Room.find({ _id: { $in: roomIds } }).lean();
         const roomMap = new Map(rooms.map(room => [room._id.toString(), room]));
@@ -187,7 +206,7 @@ export const getBookings = async (req: Request, res: Response): Promise<void> =>
         logger.info(`Bookings cached (key: ${cacheKey}).`);
 
         logger.info(`Sending back the bookings with the needed details.`)
-        res.json({ bookings: bookingsWithDetails });
+        res.status(HTTP_STATUS.OK).json({ bookings: bookingsWithDetails });
     } catch (error) {
         logger.error(`Failed to fetch the bookings.`)
         res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch bookings" });
@@ -232,6 +251,7 @@ export const updateBooking = async(req: Request, res: Response) => {
         io.to(req.user._id).emit('sendBookingUpdate', {
             messageUser: `NORMAL USER MESSAGE: ${req.user.username} updated the booking with the ID of ${id}`,
         })
+
         logger.info(`The booking has been updated`)
         res.status(HTTP_STATUS.NO_CONTENT).send()
     } catch(error) {
@@ -290,6 +310,7 @@ export const removeBooking = async (req: Request, res: Response): Promise<void> 
         } else {
             logger.error('There was an issue with deleting the cache.')
             res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({message: "There was an issue when sending back the data."})
+            return
         }
 
         io.to(userId).emit('sendBookingDelete', {

@@ -39,8 +39,7 @@ export const createUser = async(req: Request, res: Response) : Promise<void> => 
             emailAddress,
             password,
             roleRaise,
-            role,
-            refreshTokens: []
+            role
         })
         
         try {
