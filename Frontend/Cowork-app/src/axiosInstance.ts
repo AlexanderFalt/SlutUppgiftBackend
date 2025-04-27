@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+const API = import.meta.env.VITE_API_URL;
 axios.interceptors.response.use(
     response => response,
     async error => {
@@ -9,7 +10,7 @@ axios.interceptors.response.use(
         originalRequest._retry = true;
   
         try {
-          await axios.post('/api/users/refresh-token');
+          await axios.post(`${API}/api/users/refresh-token`);
   
           return axios(originalRequest);
         } catch (refreshError) {
