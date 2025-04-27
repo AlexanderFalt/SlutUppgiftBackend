@@ -10,8 +10,9 @@ axios.interceptors.response.use(
         originalRequest._retry = true;
   
         try {
-          await axios.post(`${API}/api/users/refresh-token`);
+          await axios.post(`${API}/api/users/refresh-token`, {}, {withCredentials: true});
   
+          originalRequest.withCredentials = true;
           return axios(originalRequest);
         } catch (refreshError) {
           console.error('Failed to refresh token:', refreshError);

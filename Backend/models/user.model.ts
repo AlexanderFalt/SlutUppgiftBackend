@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 export interface IUser extends mongoose.Document {
   username: string;
-  name?: string;
+  name?: string; // Antingen address till användaren (om Owner) eller full namn till användaren (om User).
   emailAddress: string;
   password: string;
   roleRaise?: boolean;
