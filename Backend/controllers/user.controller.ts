@@ -152,7 +152,7 @@ export const logout = async (req: Request, res: Response) : Promise<void> => {
         return 
     }
     
-    io.on('disconnect', (socket: Socket) => {
+    io.on('disconnect', (socket: Socket) => { // sätta den någon annanstans?
         socket.disconnect()
         console.log('Left room this is the current rooms:', Array.from(socket.rooms))
     })

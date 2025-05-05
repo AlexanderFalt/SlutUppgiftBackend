@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL;
+/* Gör något fel? */
 axios.interceptors.response.use(
     response => response,
     async error => {
