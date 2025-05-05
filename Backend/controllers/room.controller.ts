@@ -1,9 +1,21 @@
 import Room from '../models/room.model.ts';
 import Booking from '../models/booking.model.ts';
 import User from '../models/user.model.ts';
+import { logger } from '../utils/logger.utils.ts';
 import { Request, Response } from 'express';
+import { HTTP_STATUS } from '../constants/httpStatusCodes.ts';
 
 export const createRoom = async(req: Request, res: Response) : Promise<void> => {
+    
+    if (!req.user) {
+        logger.error(`Something went wrong when finding the user.`)
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+        return;
+    }
+
+    const client = req.app.get('redisclient');
+    const io = req.app.get('socketio');
+
     try{
         const {
             address, 
@@ -16,9 +28,10 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
         } = req.body;
         
         const userObject = await User.findOne({username: name})
+
         if (userObject?.roleRaise === false) {
-            console.log("The user has not been confirmed")
-            res.status(403).send()
+            logger.error(`The users application has not yet been accepted.`)
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({message: "The users application has not yet been accepted."})
             return
         }
 
@@ -34,43 +47,102 @@ export const createRoom = async(req: Request, res: Response) : Promise<void> => 
 
         await newRoom.save()
 
-        res.status(201).json(newRoom)
+        try {
+            const updatedRooms = await Room.find().lean();
+            await client.set('roomCache', JSON.stringify(updatedRooms));
+        } catch(e) {
+            logger.error("There was an error when updating the cache for the rooms.")
+        }
+
+        io.to(req.user._id).emit('createdRoom', {
+            messageOwner: `${req.user.username} created a new room.`
+        })
+        
+        logger.error(`The room has been created and added to the database.`)
+        res.status(HTTP_STATUS.CREATED).json(newRoom)
     } catch(error) {
-        console.error('Error creating room:', error);
-        res.status(500).json({ message: 'Server error' })
+        logger.error(`There was an error on the server side.`)
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Server error' })
     }
 }
 
 export const getRooms = async(req: Request, res: Response) :  Promise<void> => {
+    if (!req.user) {
+        logger.error(`User was not found.`)
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+        return;
+    }
+
+    const client = req.app.get('redisclient');
+
     try {
-        const rooms = await Room.find({}).lean();
-        console.log(`Getting the rooms: \n${rooms}`)
-        res.status(200).json(rooms);
+        const data = JSON.parse(await client.get('roomCache'));
+        if(!data) {
+            const rooms = await Room.find({}).lean();
+            await client.set('roomCache', JSON.stringify(rooms));
+            logger.info(`The rooms are being sent back to the frontend from the DB.`)
+            res.status(HTTP_STATUS.OK).json(rooms);
+            return    
+        }
+        logger.info('The rooms are being sent back to the frontend from the cache.')
+        res.status(HTTP_STATUS.OK).json(data)
     } catch(error) {
-        console.error('Error fetching rooms:', error);
-        res.status(500).json({ error: 'An error occurred while fetching rooms.' });
+        logger.error(`Something went wrong when trying to fetch the rooms.`)
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred while fetching rooms.' });
     }
 }
 
 export const removeRoom = async(req: Request, res: Response) : Promise<void> => {
+    if (!req.user) {
+        logger.error(`The user could not be found.`)
+        res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Unauthorized" });
+        return;
+    }
+
+    const client = req.app.get('redisclient');
+
     try {
         const { id } = req.params;
-        const deletedBookings = await Booking.deleteMany({roomId: id});
-        console.log(`Succesfully deleted the following bookings: \n${deletedBookings}`)
+        const io = req.app.get('socketio');
+        await Booking.deleteMany({roomId: id});
         const room = await Room.findByIdAndDelete(id);
         if (!room) {
-          res.status(404).json({ message: 'Room not found' });
+            logger.error(`Could not find the room.`)
+            res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Room not found' });
+            return
         }
-        res.status(200).json({ message: 'Room deleted successfully' });
+
+        try {
+            const updatedRooms = await Room.find().lean();
+            await client.set('roomCache', JSON.stringify(updatedRooms));
+        } catch(e) {
+            logger.error("There was an error when updating the cache for the rooms.")
+        }
+
+        io.to(req.user._id).emit('removedRoom', {
+            messageOwner: `${req.user.username} removed the room with the ID of ${id}`
+        })
+        logger.info(`The room was succesfully deleted.`)
+        res.status(HTTP_STATUS.OK).json({ message: 'Room deleted successfully' });
     } catch(error) {
-        console.error(error);
-        res.status(500).json({ message: 'Deletion Error'})
+        logger.error(`There was an error during the deletion function.`)
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Deletion Error'})
     }
 }
 
 export const updateRoom = async(req: Request, res: Response) : Promise<void> => {
+
+    if (!req.user) {
+        logger.error(`Could not find the user.`)
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+        return;
+    }
+
+    const client = req.app.get('redisclient');
+
     try {
         const {id} = req.params;
+        const io = req.app.get('socketio');
         const {
             address,
             name,
@@ -83,13 +155,10 @@ export const updateRoom = async(req: Request, res: Response) : Promise<void> => 
 
         const userObject = await User.findOne({username: name})
         if (userObject?.roleRaise === false) {
-            console.log("The user has not been confirmed")
-            res.status(403).send()
+            logger.error(`The application has not yet been accepted.`)
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" })
             return
         }
-        
-        console.log(`This was the ID: ${id} \n\n This was the Payload: \n ${address}\n${name}\n${roomNumber}\n${roomOpens}\n${roomCloses}\n${capacity}\n${type}\n`);
-        
         const updatedRoom = await Room.findByIdAndUpdate(
             id,
             { address, name, roomNumber, roomOpens, roomCloses, capacity, type },
@@ -97,13 +166,26 @@ export const updateRoom = async(req: Request, res: Response) : Promise<void> => 
         );
       
         if (!updatedRoom) {
-            res.status(404).json({ message: 'Room not found' });
+            logger.error(`Could not find the room.`)
+            res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Room not found' });
             return;
         }
 
-        res.status(204).send()
+        try {
+            const updatedRooms = await Room.find().lean();
+            await client.set('roomCache', JSON.stringify(updatedRooms));
+        } catch(e) {
+            logger.error("There was an error when updating the cache for the rooms.")
+        }
+
+        io.to(req.user._id).emit('updateRoom', {
+            messageOwner: `${req.user.username} updated the room with the ID of ${id}`
+        })
+
+        logger.info(`The room was succesfully updated.`)
+        res.status(HTTP_STATUS.NO_CONTENT).send()
     } catch(error) {
-        console.error(error);
-        res.status(500).json({ message: 'Update Error'})
+        logger.error(`There was an updated error on the server side.`)
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Update Error'})
     }
 }

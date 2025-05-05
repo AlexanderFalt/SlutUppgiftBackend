@@ -61,24 +61,31 @@ export default function HomePage() {
         type: "",
     });
 
+    const API = import.meta.env.VITE_API_URL;
+    
     const fetchRooms = useCallback(() => {
-        axios.get('/api/room', { withCredentials: true })
+        console.log(`Calling: ${API}/api/room`)
+        axios.get(`${API}/api/room`, { withCredentials: true })
             .then((response) => {
                 console.log(response.data);
+                response.data.map((thing: AvailableRoomsObject) => {
+                    console.log(thing.name)
+                })
                 const filteredRooms = response.data.filter((room: AvailableRoomsObject) => room.name === username);
                 setRooms(filteredRooms);
+                console.log(filteredRooms)
                 setFullRooms(filteredRooms);
             })
             .catch((error) => {
                 console.error("Error fetching rooms:", error);
             });
-    }, [username]);
+    }, [username, API]);
 
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get("/api/users/getRole", { withCredentials: true });
-                console.log(response.data.roleRaise + " " + response.data.username);
+                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
+                console.log(response.data.roleRaise + " " + response.data.username + " " + response.data.username);
                 setRoleRaise(response.data.roleRaise);
                 setUsername(response.data.username);
             } catch (error) {
@@ -87,7 +94,7 @@ export default function HomePage() {
         };
     
         fetchUserRole();
-    }, []);
+    }, [API]);
     
     useEffect(() => {
         if (roleRaise) {
@@ -132,7 +139,7 @@ export default function HomePage() {
         }
         console.log(roomData)
         setRoomFieldVisablity(!roomFieldVisablity)
-        axios.post('/api/room', roomData)
+        axios.post(`${API}/api/room`, roomData, {withCredentials: true})
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -144,7 +151,7 @@ export default function HomePage() {
 
     const removeListing = (id : string) => {
         if (id !== undefined) {
-            axios.delete(`api/room/${id}`, {withCredentials: true})
+            axios.delete(`${API}/api/room/${id}`, {withCredentials: true})
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -182,7 +189,7 @@ export default function HomePage() {
         }
         if (id !== undefined) {
             try{
-                await axios.put(`/api/room/${id}`, updatePayload, {withCredentials: true});
+                await axios.put(`${API}/api/room/${id}`, updatePayload, {withCredentials: true});
                 fetchRooms()
             } catch(error) {
                 console.error(error)
@@ -302,7 +309,15 @@ export default function HomePage() {
                                         <Box  sx={{width: "100%", height: "85.5%"}}>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
                                                 <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Opening time:</Typography>
-                                                <TextField variant="standard" value={roomData.roomOpens} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
+                                                <TextField variant="standard" value={roomData.roomOpens} type="time" sx={{width: "30%"}}slotProps={{htmlInput: {
+                                                        min: '00:00',
+                                                        max: '24:00',
+                                                        step: 60,
+                                                        style: {
+                                                            marginLeft: '4px',
+                                                            fontSize: 'clamp(0.95rem, 2.5vw, 1rem)',
+                                                        },
+                                                    }, }}
                                                     onChange={(e) => {
                                                         setRoomData((prev) => ({
                                                         ...prev, 
@@ -312,7 +327,15 @@ export default function HomePage() {
                                             </Box>
                                             <Box sx={{display: "flex", alignItems: "center"}}>
                                                 <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}>Closing time:</Typography>
-                                                <TextField variant="standard" value={roomData.roomCloses} type="time" sx={{width: "30%"}} slotProps={{input: { style: { marginLeft: '4px', fontSize: "clamp(0.95rem, 2.5vw, 1rem)" }, }, }}
+                                                <TextField variant="standard" value={roomData.roomCloses} type="time" sx={{width: "30%"}} slotProps={{htmlInput: {
+                                                        min: '00:00',
+                                                        max: '24:00',
+                                                        step: 60,
+                                                        style: {
+                                                            marginLeft: '4px',
+                                                            fontSize: 'clamp(0.95rem, 2.5vw, 1rem)',
+                                                        },
+                                                    }, }}
                                                     onChange={(e) =>
                                                         setRoomData((prev) => ({
                                                         ...prev,
@@ -442,6 +465,11 @@ export default function HomePage() {
                                                             inputLabel: {
                                                               shrink: true,
                                                             },
+                                                            htmlInput: {
+                                                                min: '00:00',
+                                                                max: '24:00',
+                                                                step: 60,
+                                                            }
                                                         }}
                                                         variant="outlined"
                                                         label="Opening time"
@@ -501,6 +529,11 @@ export default function HomePage() {
                                                             inputLabel: {
                                                               shrink: true,
                                                             },
+                                                            htmlInput: {
+                                                                min: '00:00',
+                                                                max: '24:00',
+                                                                step: 60,
+                                                            }
                                                         }}
                                                         variant="outlined"
                                                         label="Closing time"

@@ -47,10 +47,11 @@ export default function Bookings() {
     const [bookingInFocus, setBookingInFocus] = useState<{ [key: string]: boolean }>({});
     const [startTime, setStartTime] = useState<string>();
     const [endTime, setEndTime] = useState<string>();
+    const API = import.meta.env.VITE_API_URL;
         
     const fetchBookings = useCallback(async () => {
         try {
-            const response = await axios.get('/api/bookings', { withCredentials: true });
+            const response = await axios.get(`${API}/api/bookings`, { withCredentials: true });
             console.log(response.data)
             const formattedBookings = response.data.bookings.map((booking: bookingFormat) => ({
                 ...booking,
@@ -58,12 +59,12 @@ export default function Bookings() {
                 endTime: new Date(booking.endTime),
             }));
             
-            console.log(formattedBookings)
+            console.log("THIS WAS THE FORMATED BOOKING: \n ", formattedBookings)
             setBookings(formattedBookings);
         } catch (error) {
             console.log(`Error that came up ${error}`);
         }
-    }, []);
+    }, [API]);
 
     const ChangeBookingFocus = (bookingId: string | undefined, cancel: boolean = false) => {
         if (!bookingId) return;
@@ -88,7 +89,7 @@ export default function Bookings() {
                 startTime,
                 selectDate
             }
-            await axios.put(`/api/bookings/${id}`, payload, { withCredentials: true });
+            await axios.put(`${API}/api/bookings/${id}`, payload, { withCredentials: true });
             fetchBookings();
         } catch(error) {
             console.error(error)
@@ -101,7 +102,7 @@ export default function Bookings() {
     
     const removeBooking = async (id: string) => {
         try {
-            await axios.delete(`/api/bookings/${id}`, { withCredentials: true });
+            await axios.delete(`${API}/api/bookings/${id}`, { withCredentials: true });
             fetchBookings();
         } catch (e) {
             console.error("Error deleting booking:", e);
@@ -121,9 +122,11 @@ export default function Bookings() {
         }}>
             <Box sx={{ width: { sm: "100vw", md: "60vw" }}}>
                 {bookings && bookings.map((booking, index) => {
+                    console.log(booking)
                     if (!booking._id) return null;
+                    if (!booking.roomInfo) return null;
+                    if (!booking.userInfo) return null;
                     const isFocused = bookingInFocus[booking._id] || false;
-
                     const localStartTime = dayjs.utc(booking.startTime).local().format("HH:mm");
                     const localEndTime = dayjs.utc(booking.endTime).local().format("HH:mm");
                     const date = dayjs.utc(booking.startTime).local().format("YYYY-MM-DD");
@@ -142,7 +145,7 @@ export default function Bookings() {
                                     <Box sx={{width: "50%"}}>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Opening times: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.roomInfo.roomOpens} - {booking.roomInfo.roomCloses}</Box></Typography>
                                         <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Room: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.roomInfo.roomNumber}</Box></Typography>
-                                        <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Name: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.userInfo.name ? `${booking.userInfo.name} - ${booking.userInfo.username}` : booking.userInfo.username}</Box></Typography>
+                                        <Typography variant="body1" sx={{color: "#282828", fontWeight: "400", fontSize: "clamp(0.95rem, 2.5vw, 1rem)"}}> Name: <Box component={'span'} sx={{fontWeight: "500"}}>{booking.userInfo?.name ? booking.userInfo.name : booking.userInfo?.username ?? "Unknown user" }</Box></Typography>
 
                                     </Box>
                                 </CardContent>
@@ -192,6 +195,14 @@ export default function Bookings() {
                                             }}
                                             slotProps={{
                                                 input: { style: { textAlign: "center", marginLeft: "4px" } },
+                                                inputLabel: {
+                                                    shrink: true,
+                                                  },
+                                                  htmlInput: {
+                                                      min: '00:00',
+                                                      max: '24:00',
+                                                      step: 60,
+                                                  }
                                             }}
                                         />
                                         <TextField
@@ -216,6 +227,14 @@ export default function Bookings() {
                                             }}
                                             slotProps={{
                                                 input: { style: { textAlign: "center", marginLeft: "4px" } },
+                                                inputLabel: {
+                                                    shrink: true,
+                                                  },
+                                                  htmlInput: {
+                                                      min: '00:00',
+                                                      max: '24:00',
+                                                      step: 60,
+                                                  }
                                             }}
                                         />
                                     </Box>

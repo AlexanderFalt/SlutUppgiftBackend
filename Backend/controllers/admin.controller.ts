@@ -2,19 +2,23 @@ import { Request, Response } from "express"
 import User from '../models/user.model.ts';
 import Room from '../models/room.model.ts';
 import Booking from "../models/booking.model.ts";
+import { logger } from '../utils/logger.utils.ts'
+import { HTTP_STATUS } from "../constants/httpStatusCodes.ts";
 
 export const getUsers = async(req: Request, res: Response) => {
-    console.log("Getting the users")
+    /* Hämtar alla användare */
     try {
         if (!req.user) {
-            res.status(401).json({ message: "Unauthorized" });
+            logger.error("The user was not found")
+            res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Unauthorized" });
             return;
         }
         
         const { role, username } = req.user;
 
         if (role !== "Admin") {
-            res.status(403).json({ message: "Forbidden" });
+            logger.error("The user was not an Admin")
+            res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Forbidden" });
             return;
         }
 
@@ -28,56 +32,73 @@ export const getUsers = async(req: Request, res: Response) => {
             role: user.role
         }))
 
-        res.status(200).send(modifiedUsers)
+
+
+        logger.info("Succesfully got all the users")
+        res.status(HTTP_STATUS.OK).send(modifiedUsers)
     } catch(e) {
-        console.error(`There was an error at getUsers:\n ${e}`)
-        res.status(500).send()
+        logger.error("There was an error when getting the users")
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send()
     }
 }
 
 export const deleteUser = async(req: Request, res: Response) => {
-    console.log("Deleting the user")
+    /* Raderar en användare */
     try {
         if (!req.user) {
-            res.status(401).json({ message: "Unauthorized" });
+            logger.error("The user was not found")
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
             return;
         }
         
         const { role } = req.user;
         const { id } = req.params;
+        const io = req.app.get('socketio');
 
         if (role !== "Admin") {
-            res.status(403).json({ message: "Forbidden" });
+            logger.error("The user was not an Admin")
+            res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Forbidden" });
             return;
         }
 
+        // Tar bort alla delar som är beroende av den användaren.
         const userObject = await User.findById(id);
-        console.log(userObject)
         if ( userObject?.role === "User" ) {
             await Booking.deleteMany({userId: userObject._id});
         } else if( userObject?.role === "Owner" ) {
             await Booking.deleteMany({userId: userObject._id});
             await Room.deleteMany({name: userObject.username});
         } else {
-            console.log("Can not delete Admin user")
-            res.status(403).send()
+            res.status(HTTP_STATUS.FORBIDDEN).send()
             return
         }
 
         const user = await User.findByIdAndDelete(id);
         if (!user) {
-          res.status(404).json({ message: 'Room not found' });
+            logger.error("The user was not found")
+            res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Room not found' });
         }
 
-        res.status(200).send({message: `Deleted user: ${user}`})
+        io.to(req.user._id).emit('removedUser', {
+            messageAdmin: `${req.user.username} removed the user ${userObject.username}`
+        })
+
+        logger.info("The user was succesfully removed")
+        res.status(HTTP_STATUS.OK).send({message: `Deleted user: ${user}`})
     } catch(e) {
-        console.error(`There was an error at deleteUser:\n ${e}`)
-        res.status(500).send()
+        logger.error("There was an error when trying to remove the user")
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send()
     }
 }
 
 export const getRoleRaise = async(req: Request, res: Response) => {
-    console.log("Getting all the users that want a role raise.")
+    /* Hämta ägare (Owner) om dom letar efter godkännande. */
+    if (!req.user) {
+        logger.error("Could not find the user")
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+        return;
+    }
+    
     try {
         const users = await User.find({roleRaise: false, role: "Owner"})
         const modifiedUsers = users.map((user) => ({
@@ -86,35 +107,51 @@ export const getRoleRaise = async(req: Request, res: Response) => {
             email: user.emailAddress,
             id: user._id
         }))
-        res.status(200).send(modifiedUsers);
+        logger.info("Succesfully got all the applicants")
+        res.status(HTTP_STATUS.OK).send(modifiedUsers);
     } catch(e) {
-        console.log(e)
-        res.status(500).send()
+        logger.error("There was an error when trying to find the applicants")
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send()
     }
 }
 
 export const updateRoleRaise = async(req: Request, res: Response) => {
+    /* Godkänner ägare (Owner) applikationer. */
     const {
         id
     } = req.params;
 
     if (!req.user) {
-        res.status(401).send({ error: 'Unauthorized' });
-        return;
+         logger.error("Could not find the user")
+         res.status(HTTP_STATUS.UNAUTHORIZED).send({ error: 'Unauthorized' });
+         return;
       }
+
     const role = req.user.role;
+    const io = req.app.get('socketio');
 
     if (role !== "Admin") {
-        res.status(403).send();
+        logger.error("The user was not an Admin")
+        res.status(HTTP_STATUS.FORBIDDEN).send();
         return
     }
 
-    console.log("Trying to update the role raise for user")
     try {
-        await User.findOneAndUpdate({_id: id}, {roleRaise: true})
-        res.status(200).send()
+        const newUser = await User.findOneAndUpdate({_id: id}, {roleRaise: true})
+            
+        if(!newUser) {
+            res.status(HTTP_STATUS.NOT_FOUND).send({message: "The newUser was not found"})
+            return
+        }
+
+        io.to(req.user._id).emit('raiseUserRole', {
+            messageAdmin: `${req.user.username} raised the role of ${newUser.username ? newUser.username + '.' : "a user."}`
+        })
+
+        logger.info("The role raise was succesfully updated")
+        res.status(HTTP_STATUS.OK).send()
     } catch(e) {
-        console.log(e)
-        res.status(500).send({ error: "Failed to update roleRaise" });
+        logger.error("There was an error when trying to raise the role.")
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send({ error: "Failed to update roleRaise" });
     }
 }

@@ -1,5 +1,7 @@
 version: "3.8"
 services:
+  redis:
+      image: redis:7
   backend:
     build:
       context: ./Backend
@@ -7,12 +9,14 @@ services:
       - "8080:8080"
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://mongo:27017/coworkify
+      - MONGODB_URI=mongodb://mongo:27017/coworkify
+      - REDIS_URL=redis://redis:6379
     volumes:
       - ./Backend:/app
       - /app/node_modules
     depends_on:
       - mongo
+      - redis
   frontend:
     build:
       context: ./Frontend/Cowork-app

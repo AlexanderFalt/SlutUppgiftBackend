@@ -8,7 +8,6 @@ export interface IRoomModel extends mongoose.Document {
     roomCloses: string,
     capacity: number,
     type: "workspace" | "conference",
-
 }
 
 const roomSchema = new mongoose.Schema<IRoomModel>({

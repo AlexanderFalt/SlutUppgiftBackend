@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 export interface IUser extends mongoose.Document {
   username: string;
-  name?: string;
+  name?: string; // Antingen address till användaren (om Owner) eller full namn till användaren (om User).
   emailAddress: string;
   password: string;
   roleRaise?: boolean;
@@ -20,9 +20,9 @@ const userSchema = new mongoose.Schema<IUser>({
 });
 
 userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
+    if (!this.isModified('password')) return next(); // Om lösenordet har redan hashat fortsätt till nästa function.
+    this.password = await bcrypt.hash(this.password, 10); // Hashar lösenordet med 10 saltnings rundor. 
     next();
-  });
+});
 
-  export default mongoose.model<IUser>('User', userSchema);
+export default mongoose.model<IUser>('User', userSchema);
