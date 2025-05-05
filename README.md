@@ -1,10 +1,10 @@
 # Slutuppgift för Backend utveckling i Node.JS: Coworkify
 
-A simple platform where:
+En simple platform där:
 
-- **Users** register and book coworking spots  
-- **Owners** apply, get approved, and list/manage spaces  
-- **Admins** approve owners and manage the system  
+- **Users** kan registerera sig och boka rum.  
+- **Owners** kan ansöka, bli godkända och sedan lista/ta hand om rum.  
+- **Admins** kan godkäna användare och hantera systemet.  
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ A simple platform where:
 | `/api/users/register` | POST   | No    | Skapar konto och returnerar JWT         |
 | `/api/users/login`    | POST   | No    | Loggar in och returnerar JWT            |
 | `/api/users/logout`   | POST   | Yes   | Loggar ut och tar bort JWT              |
-| `/api/users/getRole`  | GET    | Yes   | Hämtar användarens roll                 |
+| `/api/users/getRole`  | GET    | Yes   | Hämtar information om användaren        |
 
 ### /api/room
 
