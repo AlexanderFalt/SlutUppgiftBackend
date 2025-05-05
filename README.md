@@ -6,7 +6,7 @@ En simple platform där:
 - **Owners** kan ansöka, bli godkända och sedan lista/ta hand om rum.  
 - **Admins** kan godkäna användare och hantera systemet.  
 
-## Tech Stack
+## Links
 
 **Frontend** kan hittas på: https://coworkifytwo.vercel.app/
 
