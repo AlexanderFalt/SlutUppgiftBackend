@@ -8,6 +8,10 @@ En simple platform där:
 
 ## Tech Stack
 
+**Frontend** kan hittas på: https://coworkifytwo.vercel.app/
+
+## Tech Stack
+
 - **Frontend:** React and Material UI
 - **Backend:** Node.js med Express.js.  
 - **Databas:** MongoDB
