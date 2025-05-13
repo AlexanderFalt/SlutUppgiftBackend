@@ -24,7 +24,7 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
   const handleLogout = async() => {
     try {
       socket.disconnect()
-      const response = await axios.post(`${API}/api/users/logout`, {}, { withCredentials: true });
+      const response = await axios.post(`${API}/api/users/logout`, {});
       if(response.status === 200 ) {  
         navigate("/sign-in");
         console.log("Succesfully logged out.");

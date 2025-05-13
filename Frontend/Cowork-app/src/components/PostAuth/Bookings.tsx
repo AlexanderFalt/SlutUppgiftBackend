@@ -51,7 +51,7 @@ export default function Bookings() {
         
     const fetchBookings = useCallback(async () => {
         try {
-            const response = await axios.get(`${API}/api/bookings`, { withCredentials: true });
+            const response = await axios.get(`${API}/api/bookings`);
             console.log(response.data)
             const formattedBookings = response.data.bookings.map((booking: bookingFormat) => ({
                 ...booking,
@@ -59,7 +59,6 @@ export default function Bookings() {
                 endTime: new Date(booking.endTime),
             }));
             
-            console.log("THIS WAS THE FORMATED BOOKING: \n ", formattedBookings)
             setBookings(formattedBookings);
         } catch (error) {
             console.log(`Error that came up ${error}`);
@@ -89,7 +88,7 @@ export default function Bookings() {
                 startTime,
                 selectDate
             }
-            await axios.put(`${API}/api/bookings/${id}`, payload, { withCredentials: true });
+            await axios.put(`${API}/api/bookings/${id}`, payload);
             fetchBookings();
         } catch(error) {
             console.error(error)
@@ -102,7 +101,7 @@ export default function Bookings() {
     
     const removeBooking = async (id: string) => {
         try {
-            await axios.delete(`${API}/api/bookings/${id}`, { withCredentials: true });
+            await axios.delete(`${API}/api/bookings/${id}`);
             fetchBookings();
         } catch (e) {
             console.error("Error deleting booking:", e);

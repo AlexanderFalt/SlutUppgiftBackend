@@ -65,7 +65,7 @@ export default function HomePage() {
     
     const fetchRooms = useCallback(() => {
         console.log(`Calling: ${API}/api/room`)
-        axios.get(`${API}/api/room`, { withCredentials: true })
+        axios.get(`${API}/api/room`)
             .then((response) => {
                 console.log(response.data);
                 response.data.map((thing: AvailableRoomsObject) => {
@@ -84,7 +84,7 @@ export default function HomePage() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
+                const response = await axios.get(`${API}/api/users/getRole`);
                 console.log(response.data.roleRaise + " " + response.data.username + " " + response.data.username);
                 setRoleRaise(response.data.roleRaise);
                 setUsername(response.data.username);
@@ -139,7 +139,7 @@ export default function HomePage() {
         }
         console.log(roomData)
         setRoomFieldVisablity(!roomFieldVisablity)
-        axios.post(`${API}/api/room`, roomData, {withCredentials: true})
+        axios.post(`${API}/api/room`, roomData)
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -151,7 +151,7 @@ export default function HomePage() {
 
     const removeListing = (id : string) => {
         if (id !== undefined) {
-            axios.delete(`${API}/api/room/${id}`, {withCredentials: true})
+            axios.delete(`${API}/api/room/${id}`)
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -189,7 +189,7 @@ export default function HomePage() {
         }
         if (id !== undefined) {
             try{
-                await axios.put(`${API}/api/room/${id}`, updatePayload, {withCredentials: true});
+                await axios.put(`${API}/api/room/${id}`, updatePayload);
                 fetchRooms()
             } catch(error) {
                 console.error(error)

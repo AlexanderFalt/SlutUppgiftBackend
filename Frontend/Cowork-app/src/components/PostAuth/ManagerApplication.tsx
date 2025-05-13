@@ -24,7 +24,7 @@ export default function ManagerApplication() {
 
     const fetchUsers = useCallback(async() => {
         try { 
-            const response = await axios.get(`${API}/api/admin/role-raise`, {withCredentials: true})
+            const response = await axios.get(`${API}/api/admin/role-raise`)
             console.log(`This was the data that was returned: ${JSON.stringify(response.data)}`)
             setUsers(response.data)
         } catch(e) {
@@ -34,7 +34,7 @@ export default function ManagerApplication() {
 
     const acceptApplication = async(id: string) => {
         try {
-            await axios.put(`${API}/api/admin/role-raise/${id}`, {}, {withCredentials: true})
+            await axios.put(`${API}/api/admin/role-raise/${id}`, {})
             fetchUsers();
         } catch(e) {
             console.log(e)

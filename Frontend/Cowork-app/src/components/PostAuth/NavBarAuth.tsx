@@ -22,7 +22,7 @@ export default function NavBar() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
+                const response = await axios.get(`${API}/api/users/getRole`);
                 console.log(response.data.role + " " + response.data.username)
                 setRole(response.data.role);
                 setUsername(response.data.username);

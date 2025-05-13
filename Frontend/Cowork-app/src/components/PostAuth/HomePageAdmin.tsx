@@ -63,7 +63,7 @@ export default function HomePageAdmin() {
     const API = import.meta.env.VITE_API_URL;
 
     const fetchRooms = useCallback(() => {
-        axios.get(`${API}/api/room`, { withCredentials: true })
+        axios.get(`${API}/api/room`)
             .then((response) => {
                 console.log(response.data);
                 setRooms(response.data);
@@ -77,7 +77,7 @@ export default function HomePageAdmin() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
+                const response = await axios.get(`${API}/api/users/getRole`);
                 setUsername(response.data.username);
             } catch (error) {
                 console.error("Failed to fetch user role", error);
@@ -115,7 +115,7 @@ export default function HomePageAdmin() {
         }
         console.log(roomData)
         setRoomFieldVisablity(!roomFieldVisablity)
-        axios.post(`${API}/api/room`, roomData, { withCredentials: true })
+        axios.post(`${API}/api/room`, roomData)
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -132,7 +132,7 @@ export default function HomePageAdmin() {
 
     const removeListing = (id : string) => {
         if (id !== undefined) {
-            axios.delete(`${API}/api/room/${id}`, {withCredentials: true})
+            axios.delete(`${API}/api/room/${id}`)
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -170,7 +170,7 @@ export default function HomePageAdmin() {
         }
         if (id !== undefined) {
             try{
-                await axios.put(`${API}/api/room/${id}`, updatePayload, {withCredentials: true});
+                await axios.put(`${API}/api/room/${id}`, updatePayload);
                 fetchRooms()
             } catch(error) {
                 console.error(error)
