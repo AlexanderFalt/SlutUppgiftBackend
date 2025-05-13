@@ -2,7 +2,7 @@ import {
     CircularProgress 
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import api from '@/lib/api';
+import api from '../../axiosInstance.ts';
 import HomePageConsumer from "../PostAuth/HomePageConsumer.tsx";
 import HomePageOwner from "../PostAuth/HomePageOwner.tsx";
 import HomePageAdmin from '../PostAuth/HomePageAdmin.tsx';
