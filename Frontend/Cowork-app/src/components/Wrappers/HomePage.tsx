@@ -2,7 +2,7 @@ import {
     CircularProgress 
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from '@/lib/api';
 import HomePageConsumer from "../PostAuth/HomePageConsumer.tsx";
 import HomePageOwner from "../PostAuth/HomePageOwner.tsx";
 import HomePageAdmin from '../PostAuth/HomePageAdmin.tsx';
@@ -15,7 +15,7 @@ export default function HomePage() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get(`${API}/api/users/getRole`, { withCredentials: true });
+                const response = await api.get(`${API}/api/users/getRole`);
                 setRole(response.data.role);
             } catch (error) {
                 console.error("Failed to fetch user role", error);

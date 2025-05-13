@@ -13,10 +13,10 @@ import {
     Grow
 } from "@mui/material";
 import Visibility from '@mui/icons-material/Visibility';
+import api from '../../axiosInstance.ts';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 export default function SignUp() {
     const [ showPasswordOne, setShowPasswordOne ] = useState(false)
@@ -76,10 +76,9 @@ export default function SignUp() {
         console.log(payload)
 
         try {
-          const response = await axios.post(
+          const response = await api.post(
             `${API}/api/users/register`,
-            payload,
-            { withCredentials: true }
+            payload
           );
     
           console.log("Login successful", response.data);

@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Avatar, AvatarGroup } from '@mui/material';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../axiosInstance.ts';
 
 type BookingAvatar = {
   username: string;
@@ -97,22 +97,9 @@ export default function PatronList({ eventId }: { eventId: string }) {
 
 async function returnTheBookings(roomId: string): Promise<BookingAvatar[]> {
   const API = import.meta.env.VITE_API_URL;
-  try {
-    const response = await axios.get<{ bookings: BookingAvatar[] }>(
-      `${API}/api/bookings/getBookings/${roomId}`,
-      { withCredentials: true }
-    );
-    console.log('Bookings:', response.data.bookings);
-    return response.data.bookings;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error('Axios error status:', error.response?.status);
-      console.error('Axios error data:', error.response?.data);
-    } else if (error instanceof Error) {
-      console.error('General error message:', error.message);
-    } else {
-      console.error('Unexpected error:', error);
-    }
-    throw error;
-  }
+  const response = await api.get<{ bookings: BookingAvatar[] }>(
+    `${API}/api/bookings/getBookings/${roomId}`
+  );
+  console.log('Bookings:', response.data.bookings);
+  return response.data.bookings;
 }

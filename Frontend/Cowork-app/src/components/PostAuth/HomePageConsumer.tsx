@@ -17,7 +17,7 @@ import { useState, useEffect, useCallback } from "react";
 import PatronList from './PatronList.tsx';
 import Grid from '@mui/material/Grid2';
 import SearchIcon from '@mui/icons-material/Search';
-import axios from 'axios';
+import api from '../../axiosInstance.ts';
 import dayjs from 'dayjs';
 
 type AvailableRoomsObject = {
@@ -47,7 +47,7 @@ export default function HomePage() {
     const fetchRooms = useCallback(async () => {
         console.log("Fetching Rooms")
         try {
-            const response = await axios.get(`${API}/api/room`)
+            const response = await api.get(`${API}/api/room`)
             setRooms(response.data)
             setFullRooms(response.data)
         } catch (error) {
@@ -67,7 +67,7 @@ export default function HomePage() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get(`${API}/api/users/getRole`);
+                const response = await api.get(`${API}/api/users/getRole`);
                 setUserId(response.data.userId)
             } catch (error) {
                 console.error("Failed to fetch user role", error);
@@ -107,7 +107,7 @@ export default function HomePage() {
             date: selectDate
         }
 
-        axios.post(`${API}/api/bookings`, payload)
+        api.post(`${API}/api/bookings`, payload)
             .catch((error) => {
                 console.error("Error fetching rooms:", error);
             });

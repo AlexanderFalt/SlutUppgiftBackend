@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import api from '../../axiosInstance.ts';
 import axios from "axios";
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
@@ -44,10 +45,9 @@ export default function SignIn() {
         setError("");
     
         try {
-            const response = await axios.post(
+            const response = await api.post(
                 `${API}/api/users/login`,
-                { username, password },
-                { withCredentials: true }
+                { username, password }
             );
             console.log("Login successful", response.data);
             if (response.status === 200 && response.data.userId) {

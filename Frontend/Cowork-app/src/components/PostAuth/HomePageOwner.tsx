@@ -21,7 +21,7 @@ import Grid from '@mui/material/Grid2';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
+import api from '../../axiosInstance.ts';
 
 type AvailableRoomsObject = {
     _id?: string,
@@ -65,7 +65,7 @@ export default function HomePage() {
     
     const fetchRooms = useCallback(() => {
         console.log(`Calling: ${API}/api/room`)
-        axios.get(`${API}/api/room`)
+        api.get(`${API}/api/room`)
             .then((response) => {
                 console.log(response.data);
                 response.data.map((thing: AvailableRoomsObject) => {
@@ -84,7 +84,7 @@ export default function HomePage() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get(`${API}/api/users/getRole`);
+                const response = await api.get(`${API}/api/users/getRole`);
                 console.log(response.data.roleRaise + " " + response.data.username + " " + response.data.username);
                 setRoleRaise(response.data.roleRaise);
                 setUsername(response.data.username);
@@ -139,7 +139,7 @@ export default function HomePage() {
         }
         console.log(roomData)
         setRoomFieldVisablity(!roomFieldVisablity)
-        axios.post(`${API}/api/room`, roomData)
+        api.post(`${API}/api/room`, roomData)
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -151,7 +151,7 @@ export default function HomePage() {
 
     const removeListing = (id : string) => {
         if (id !== undefined) {
-            axios.delete(`${API}/api/room/${id}`)
+            api.delete(`${API}/api/room/${id}`)
             .then((response) => {
                 console.log(response)
                 fetchRooms()
@@ -189,7 +189,7 @@ export default function HomePage() {
         }
         if (id !== undefined) {
             try{
-                await axios.put(`${API}/api/room/${id}`, updatePayload);
+                await api.put(`${API}/api/room/${id}`, updatePayload);
                 fetchRooms()
             } catch(error) {
                 console.error(error)

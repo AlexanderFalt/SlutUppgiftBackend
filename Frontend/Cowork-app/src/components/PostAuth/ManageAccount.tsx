@@ -8,7 +8,7 @@ import {
     Button
  } from '@mui/material';
 import Grid from '@mui/material/Grid2'
-import axios from 'axios';
+import api from '../../axiosInstance.ts';
 import { useEffect, useCallback, useState } from 'react';
 
 export default function ManageAccount() {
@@ -23,7 +23,7 @@ export default function ManageAccount() {
     const API = import.meta.env.VITE_API_URL;
     const fetchUsers = useCallback(async() => {
         try { 
-            const response = await axios.get(`${API}/api/admin`)
+            const response = await api.get(`${API}/api/admin`)
             console.log(`This was the data that was returned: ${JSON.stringify(response.data)}`)
             setUsers(response.data)
         } catch(e) {
@@ -33,7 +33,7 @@ export default function ManageAccount() {
 
     const deleteUser = async(id: string) => {
         try {
-            await axios.delete(`/api/admin/${id}`)
+            await api.delete(`/api/admin/${id}`)
             console.log("Deleted user")
             fetchUsers();
         } catch(e) {

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import PatronList from './PatronList.tsx';
 import Grid from '@mui/material/Grid2'
-import axios from 'axios';
+import api from '../../axiosInstance.ts';
 import { useState, useEffect, useCallback } from 'react';
 import dayjs from "dayjs";
 import utc from 'dayjs/plugin/utc';
@@ -51,7 +51,7 @@ export default function Bookings() {
         
     const fetchBookings = useCallback(async () => {
         try {
-            const response = await axios.get(`${API}/api/bookings`);
+            const response = await api.get(`${API}/api/bookings`);
             console.log(response.data)
             const formattedBookings = response.data.bookings.map((booking: bookingFormat) => ({
                 ...booking,
@@ -88,7 +88,7 @@ export default function Bookings() {
                 startTime,
                 selectDate
             }
-            await axios.put(`${API}/api/bookings/${id}`, payload);
+            await api.put(`${API}/api/bookings/${id}`, payload);
             fetchBookings();
         } catch(error) {
             console.error(error)
@@ -101,7 +101,7 @@ export default function Bookings() {
     
     const removeBooking = async (id: string) => {
         try {
-            await axios.delete(`${API}/api/bookings/${id}`);
+            await api.delete(`${API}/api/bookings/${id}`);
             fetchBookings();
         } catch (e) {
             console.error("Error deleting booking:", e);

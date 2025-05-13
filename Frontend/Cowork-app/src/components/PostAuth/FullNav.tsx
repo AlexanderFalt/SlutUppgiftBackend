@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { Box, Paper, Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from '../../axiosInstance.ts';
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { socket } from "../../Realtime/socket";
@@ -24,7 +24,7 @@ const FullNav = forwardRef<HTMLDivElement, Roles>(({ userRole }, ref) => {
   const handleLogout = async() => {
     try {
       socket.disconnect()
-      const response = await axios.post(`${API}/api/users/logout`, {});
+      const response = await api.post(`${API}/api/users/logout`, {});
       if(response.status === 200 ) {  
         navigate("/sign-in");
         console.log("Succesfully logged out.");

@@ -7,7 +7,7 @@ import {
     Grow,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../axiosInstance.ts';
 import MenuIcon from '@mui/icons-material/Menu';
 // Navbars
 //import SmallNav from './SmallNav.tsx';
@@ -22,7 +22,7 @@ export default function NavBar() {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
-                const response = await axios.get(`${API}/api/users/getRole`);
+                const response = await api.get(`${API}/api/users/getRole`);
                 console.log(response.data.role + " " + response.data.username)
                 setRole(response.data.role);
                 setUsername(response.data.username);
